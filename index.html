@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>อากาศมุกดาหาร</title>
+<title>อากาศมุกดาหาร</title><meta name="theme-color" content="#2f7d3b">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -33,6 +33,10 @@
 .prog{height:22px;border-radius:11px;background:color-mix(in srgb,var(--mute) 25%,transparent);overflow:hidden;margin:8px 0}.prog i{display:block;height:100%;background:var(--acc)}
 .yt{width:100%;border-collapse:collapse;min-width:520px}.yt td,.yt th{padding:6px 8px;border-bottom:1px solid color-mix(in srgb,var(--mute) 30%,transparent);text-align:right}.yt td:first-child,.yt th:first-child{text-align:left}.yt th{color:var(--mute);font-weight:600}.tyb.on{background:var(--acc);color:#fff}
 .chk{grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;color:var(--fg);font-size:1.05rem}.chk input{width:24px;height:24px}.chk .mute{width:100%}
+.price{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}.price>div{background:var(--bg);border-radius:10px;padding:6px 8px;font-size:.9rem;line-height:1.35}.price b{display:block;font-size:1.25rem}.price .up,.price .dn{font-size:.85rem}
+.up{color:var(--acc)}.dn{color:var(--bad)}.must{margin:0;padding-left:24px;display:grid;gap:8px;font-size:1.05rem}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h2{margin:0;font-size:1.25rem}details.fold>summary::after{content:"แตะเพื่อเปิด ▾";color:var(--acc);font-weight:600;white-space:nowrap;font-size:.95rem}details.fold[open]>summary::after{content:"ปิด ▴"}details.fold[open]>summary{margin-bottom:10px}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:.9rem;color:var(--mute)}.facts .mute{display:block}.facts b{display:block;color:var(--fg);font-size:1.05rem}
 :root{--bg:#eef3ec;--card:#fff;--fg:#1d2a1f;--mute:#5d6b5f;--acc:#2f7d3b;--rain:#2a6fb0;--warn:#c07a12;--bad:#b23a2a;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#121a14;--card:#1b261e;--fg:#e4ede5;--mute:#9aab9d;--acc:#6cc27a;--rain:#6fb0ee;--warn:#e6a845;--bad:#ee7a6a;color-scheme:dark}}
@@ -53,25 +57,22 @@ h1{margin:0;font-size:1.6rem}select,button{font:inherit;padding:8px 12px;border-
 </style></head><body><div class="wrap">
 <div class="top"><div><h1>🌾 อากาศมุกดาหาร สำหรับเกษตรกร</h1><div class="mute" id="upd">กำลังโหลด…</div></div>
 <div class="tools"><select id="amp" aria-label="อำเภอ"></select><select id="tb" aria-label="ตำบล"></select><button id="rf">รีเฟรช</button></div></div>
-<form class="card tools" id="sf" style="padding:12px"><input id="q" list="ql" placeholder="🔎 ค้นหา ตำบล / อำเภอ / หมู่บ้าน เช่น ดงหลวง, บ้านนาโสก" style="flex:1 1 260px;min-width:0;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"><datalist id="ql"></datalist><button>ค้นหา + ปักหมุด</button><span class="mute" id="sm" style="width:100%"></span></form>
 <div class="card rb" id="rubber"><div class="rbh"><h2 style="margin:0">🌳 สวนยาง</h2><button id="say" type="button">🔊 อ่านให้ฟัง</button></div>
 <div id="tap"><div class="mute">กำลังดูฝน…</div></div>
-<div class="rtabs" role="tablist"><button type="button" data-t="todo" class="on">📅 เดือนนี้ต้องทำอะไร</button><button type="button" data-t="girth">📏 กรีดได้หรือยัง</button></div>
+<div id="price" class="price"></div>
+<div class="rtabs" role="tablist"><button type="button" data-t="todo" class="on">📅 เดือนนี้ต้องทำอะไร</button><button type="button" data-t="must">⭐ 5 ข้อต้องรู้</button><button type="button" data-t="girth">📏 กรีดได้หรือยัง</button></div>
 <div id="rt-todo"></div>
+<div id="rt-must" hidden><ol class="must">
+<li><b>อย่ากรีดตอนเปลือกยางเปียก</b> หน้ายางจะเสีย เป็นโรคเส้นดำ ดูช่อง "กรีดได้ไหม" ด้านบนทุกเย็น</li>
+<li><b>ใส่ปุ๋ยปีละ 2 ครั้ง</b> ต้นฝน (พ.ค.–มิ.ย.) และปลายฝน (ก.ย.–ต.ค.) ตอนดินชื้น ใส่ปุ๋ยคอกเสริม · <b>อย่างดปุ๋ย</b> ต้นจะโทรมในปีต่อ ๆ ไป</li>
+<li><b>หยุดกรีดช่วงยางผลัดใบ</b> (ประมาณ ก.พ.–มี.ค.) ให้ต้นพัก จะได้น้ำยางดีทั้งปี</li>
+<li><b>อย่ากรีดลึกและถี่เกิน</b> กรีดสองวันเว้นวันหรือวันเว้นวัน ไม่ให้ถึงเนื้อไม้ เปลือกจะงอกใหม่ทัน กรีดได้นาน</li>
+<li><b>ตรวจดินฟรี</b> ที่สถานีพัฒนาที่ดินมุกดาหาร แล้วใส่ปุ๋ยตามที่ดินขาด ประหยัดค่าปุ๋ยที่สุด · <b>ห้ามเผาหญ้าในสวน</b> ทำแนวกันไฟก่อนแล้ง</li>
+</ol></div>
 <div id="rt-girth" hidden><div class="big2">วัดรอบต้นยาง <span class="mute">(วัดสูงจากดิน 150 ซม. ประมาณระดับอก)</span></div>
 <div class="gi"><input id="gcm" type="number" inputmode="decimal" min="0" max="200" placeholder="เช่น 42" class="ni" aria-label="รอบต้นเป็นเซนติเมตร"><span class="big2">ซม.</span></div>
 <div id="gout"></div></div></div>
-<div class="card"><h2 style="margin:0">🛰️ แผนที่ดาวเทียม · ดูพื้นที่เพาะปลูก</h2>
-<div class="mute">แตะบนแผนที่เพื่อเลือกแปลง แล้วระบบจะวิเคราะห์ว่าเหมาะกับพืชอะไร</div>
-<div id="map"></div>
-<div class="tools"><button id="gps">📍 ตำแหน่งของฉัน</button><button id="meas">📐 วัดพื้นที่แปลง</button><button id="clr" hidden>ล้างเส้นวัด</button>
-<span style="align-self:center">พิกัด: <span class="coord" id="xy">ยังไม่ได้เลือก</span> <button id="cp" hidden>คัดลอก</button> <a id="gm" hidden target="_blank">เปิดใน Google Maps</a></span></div>
-<div id="area" class="tip" hidden style="margin-top:10px"></div>
-<div id="suit" style="margin-top:12px"></div></div>
-<div class="card" id="guide"><h2 style="margin:0">📗 คู่มือปลูกพืชให้ได้ผลผลิตเยอะ คุ้มทุน</h2>
-<div class="mute">เลือกพืชเพื่อดูฤดูปลูก พันธุ์ ปุ๋ย การจัดการน้ำ การดูแล และเคล็ดลับเพิ่มกำไร (ปรับให้เข้ากับดินอีสาน)</div>
-<div class="tools" id="gtabs" style="margin-block:10px"></div><div id="gbody"></div></div>
-<div class="card" id="calc"><h2 style="margin:0">🧮 คิดปุ๋ยทั้งสวน และ กำไร-ขาดทุน</h2>
+<div class="card" id="calc"><h2 style="margin:0">💰 ใส่ปุ๋ยเท่าไร คุ้มไหม กำไรเท่าไร</h2>
 <div class="mute">กรอกพืช อายุ และขนาดสวน แล้วระบบบอกว่าใส่ปุ๋ยอะไร ต้นละ/ไร่ละเท่าไร ทั้งสวนต้องซื้อกี่กระสอบ กี่ตัน</div>
 <div class="facts" style="margin-top:10px">
 <label>พืช<select id="cc" style="width:100%"><option value="rubber">🌳 ยางพารา</option><option value="rice">🌾 ข้าวนาปี</option><option value="cassava">🥔 มันสำปะหลัง</option><option value="cane">🎋 อ้อย</option><option value="corn">🌽 ข้าวโพดเลี้ยงสัตว์</option></select></label>
@@ -80,9 +81,22 @@ h1{margin:0;font-size:1.6rem}select,button{font:inherit;padding:8px 12px;border-
 <label id="ctreeL">จำนวนต้น (ใส่เองได้)<input id="ctree" type="number" min="0" step="1" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"></label>
 </div><div id="cout" style="margin-top:12px;overflow-x:auto"></div></div>
 <div class="card now" id="now"></div>
-<div class="card"><h2 style="margin-top:0">คำแนะนำงานไร่นาวันนี้</h2><div class="tips" id="tips"></div></div>
-<div class="card"><h2 style="margin-top:0">24 ชั่วโมงข้างหน้า <span class="mute">(แท่งฟ้า = โอกาสฝนตก)</span></h2><div class="hours" id="hours"></div></div>
-<div class="card"><h2 style="margin-top:0">พยากรณ์ 7 วัน</h2><div class="days" id="days"></div></div>
+<div class="card"><h2 style="margin-top:0">🚜 งานในไร่วันนี้ ทำได้ไหม</h2><div class="tips" id="tips"></div></div>
+<div class="card"><h2 style="margin-top:0">🌦️ พยากรณ์ 7 วัน</h2><div class="days" id="days"></div></div>
+<details class="card fold"><summary><h2>🕐 ฝนรายชั่วโมง 24 ชม.</h2></summary><div class="hours" id="hours"></div></details>
+<details class="card fold" id="mapbox"><summary><h2>🛰️ ดูแปลง ดิน และพื้นที่เหมาะปลูก (แผนที่ดาวเทียม)</h2></summary>
+<div class="mute">แตะบนแผนที่เพื่อเลือกแปลง แล้วระบบจะวิเคราะห์ว่าเหมาะกับพืชอะไร</div>
+<form class="tools" id="sf" style="margin-block:8px"><input id="q" list="ql" placeholder="🔎 ค้นหา ตำบล / อำเภอ / หมู่บ้าน เช่น ดงหลวง, บ้านนาโสก" style="flex:1 1 260px;min-width:0;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"><datalist id="ql"></datalist><button>ค้นหา + ปักหมุด</button><span class="mute" id="sm" style="width:100%"></span></form>
+<div id="map"></div>
+<div class="tools"><button id="gps">📍 ตำแหน่งของฉัน</button><button id="meas">📐 วัดพื้นที่แปลง</button><button id="clr" hidden>ล้างเส้นวัด</button>
+<span style="align-self:center">พิกัด: <span class="coord" id="xy">ยังไม่ได้เลือก</span> <button id="cp" hidden>คัดลอก</button> <a id="gm" hidden target="_blank">เปิดใน Google Maps</a></span></div>
+<div id="area" class="tip" hidden style="margin-top:10px"></div>
+<div id="suit" style="margin-top:12px"></div>
+</details>
+<details class="card fold" id="guide"><summary><h2>📗 คู่มือปลูกพืช (ยาง ข้าว มัน อ้อย ข้าวโพด ผัก)</h2></summary>
+<div class="mute">เลือกพืชเพื่อดูฤดูปลูก พันธุ์ ปุ๋ย การจัดการน้ำ การดูแล และเคล็ดลับเพิ่มกำไร (ปรับให้เข้ากับดินอีสาน)</div>
+<div class="tools" id="gtabs" style="margin-block:10px"></div><div id="gbody"></div>
+</details>
 <div class="mute">ข้อมูลจาก Open-Meteo (อัปเดตอัตโนมัติทุก 10 นาที) · ใช้ประกอบการตัดสินใจ ควรดูประกาศกรมอุตุนิยมวิทยาร่วมด้วย</div>
 </div>
 <script>
@@ -131,6 +145,7 @@ function render(d,n){
 sel.onchange=()=>{fillTb();P=null;map.setView([A[sel.value][1],A[sel.value][2]],12);load()};$("rf").onclick=load;load();setInterval(load,6e5);
 
 /* ---------- แผนที่ดาวเทียม + วิเคราะห์พื้นที่ ---------- */
+$("mapbox").addEventListener("toggle",()=>setTimeout(()=>map.invalidateSize(),50));
 const map=L.map("map").setView([16.55,104.55],10);
 const sat=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"ภาพดาวเทียม © Esri"}).addTo(map);
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}).addTo(map);
@@ -233,7 +248,7 @@ function fillTb(){tbSel.innerHTML="";tbSel.add(new Option("— ทุกตำ�
 fillTb();
 function goTb(t){const lab=`ต.${t[0]} อ.${t[1]}`+(t[4]?" (ตำแหน่งโดยประมาณ)":"");map.setView([t[2],t[3]],t[4]?11:14);pick(t[2],t[3],lab);
  $("sm").textContent=t[4]?`ปักหมุดที่กลางอำเภอ${t[1]} เพราะยังไม่มีพิกัดกลางตำบล${t[0]} แตะบนแผนที่ตรงแปลงจริงได้เลย`:`ปักหมุด ต.${t[0]} อ.${t[1]} แล้ว`;
- document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})}
+ $("mapbox").open=true;setTimeout(()=>map.invalidateSize(),50);document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})}
 tbSel.onchange=()=>{const t=TB.find(x=>x[0]===tbSel.value&&x[1]===aName(sel.value));if(t)goTb(t)};
 const ql=$("ql");TB.forEach(t=>ql.append(new Option(`ต.${t[0]} อ.${t[1]}`)));A.forEach(a=>ql.append(new Option(a[0])));
 $("sf").onsubmit=async e=>{e.preventDefault();const q=$("q").value.trim().replace(/^(ต\.|ตำบล)/,"");if(!q)return;
@@ -294,7 +309,7 @@ function showGuide(k,stay){const v=G[k];[...$("gtabs").children].forEach(b=>b.cl
  ${v.s.map(([h,l])=>`<h4>${h}</h4><ul>${l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")}
  <h4>ทำให้คุ้มที่สุด (ใช้ได้ทุกพืช)</h4><ul>${GEN.map(x=>`<li>${x}</li>`).join("")}</ul>
  <p class="mute">อัตราปุ๋ย ผลผลิต และต้นทุนเป็นค่าแนะนำทั่วไปโดยประมาณ ควรปรึกษาเกษตรอำเภอ กรมการข้าว หรือ กยท. ในพื้นที่ประกอบ</p></div>`;
- if(!stay)$("guide").scrollIntoView({behavior:"smooth"})}
+ if(!stay){$("guide").open=true;$("guide").scrollIntoView({behavior:"smooth"})}}
 showGuide(Object.keys(G).find(k=>G[k].m.includes(nowM))||"rice",true);
 
 /* ---------- คำนวณปุ๋ยทั้งสวน + คุ้มทุน ---------- */
@@ -323,7 +338,10 @@ cassava:["ราคามันสำปะหลัง สมาคมการ
 const RAOT_T={sheet:["rss-grade-3","ราคายางแผ่นรมควันชั้น 3 (กยท. ไม่ได้ประกาศราคายางแผ่นดิบ ยางแผ่นดิบมักได้ต่ำกว่านี้เล็กน้อย)"],latex:["latex","ราคาน้ำยางสด (บาทต่อกิโลเนื้อยางแห้ง)"],cup:["fresh","ราคายางก้อนถ้วยสด"]};
 const RAOT={},RPpe={};
 const thDate=d=>{const x=new Date(d+"T00:00");return x.getDate()+" "+["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."][x.getMonth()]+" "+(x.getFullYear()+543)};
-Promise.all(Object.entries(RAOT_T).map(([k,[t]])=>fetch("https://new.raot.co.th/wp-json/rubber/v1/chart?type="+t).then(r=>r.json()).then(j=>{const d=j.data.filter(x=>+x.avg_price>0).pop();if(d){RAOT[k]={p:+d.avg_price,d:d.date};if(!RPpe[k])RP[k][1]=+d.avg_price}}).catch(()=>{}))).then(()=>{try{calc()}catch(e){}});
+Promise.all(Object.entries(RAOT_T).map(([k,[t]])=>fetch("https://new.raot.co.th/wp-json/rubber/v1/chart?type="+t).then(r=>r.json()).then(j=>{const arr=j.data.filter(x=>+x.avg_price>0),d=arr.pop(),pv=arr.pop();if(d){RAOT[k]={p:+d.avg_price,d:d.date,pv:pv?+pv.avg_price:null};if(!RPpe[k])RP[k][1]=+d.avg_price}}).catch(()=>{}))).then(()=>{try{calc()}catch(e){}renderPrice()});
+function renderPrice(){const ks=Object.keys(RAOT_T).filter(k=>RAOT[k]);if(!ks.length){$("price").innerHTML=`<div class="mute" style="grid-column:1/-1">ดึงราคายาง กยท. ไม่ได้ตอนนี้</div>`;return}
+ const nm={cup:"ยางก้อนถ้วย",latex:"น้ำยางสด",sheet:"ยางแผ่นรมควัน 3"};
+ $("price").innerHTML=["cup","latex","sheet"].filter(k=>RAOT[k]).map(k=>{const r=RAOT[k],df=r.pv!=null?r.p-r.pv:0;return `<div><span class="mute">${nm[k]}</span><b class="tn">${r.p.toFixed(2)} บาท/กก.</b><span class="${df>0?"up":df<0?"dn":"mute"}">${df>0?"▲ ขึ้น "+df.toFixed(2):df<0?"▼ ลง "+(-df).toFixed(2):"เท่าเดิม"}</span></div>`}).join("")+`<div class="mute" style="grid-column:1/-1">ราคากลาง กยท. วันที่ ${thDate(RAOT[ks[0]].d)} · ราคาที่ร้านรับซื้ออาจต่างไปบ้าง</div>`}
 let FS=false,SHARE=0,RPROD="sheet",TYR=3,RPedited=false;
 // ผลผลิตเนื้อยางแห้งเฉลี่ย (กก./ไร่/ปี) เมื่อใส่ปุ๋ยครบ ดูแลดี ภาคอีสาน แยกตามปีที่กรีด
 const TAPY=[["ปีแรกที่กรีด",150],["ปีที่ 2",200],["ปีที่ 3",240],["ปีที่ 4–15 (ช่วงให้น้ำยางสูงสุด)",281],["ปีที่ 16–20",250],["ปีที่ 21 ขึ้นไป (ต้นแก่)",200]];
@@ -502,8 +520,8 @@ function girth(){const g=+$("gcm").value;if(!$("gcm").value){$("gout").innerHTML
  SAYTXT=$("gout").innerText}
 $("gcm").oninput=girth;girth();
 document.querySelectorAll(".rtabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".rtabs button").forEach(x=>x.classList.toggle("on",x===b));
- $("rt-todo").hidden=b.dataset.t!=="todo";$("rt-girth").hidden=b.dataset.t!=="girth";if(b.dataset.t==="girth")$("gcm").focus()});
-$("say").onclick=()=>{try{const t=$("rt-todo").hidden?($("tap").innerText+". "+$("gout").innerText):($("tap").innerText+". งานเดือนนี้ "+$("rt-todo").querySelector(".mo").innerText);
+ $("rt-todo").hidden=b.dataset.t!=="todo";$("rt-must").hidden=b.dataset.t!=="must";$("rt-girth").hidden=b.dataset.t!=="girth";if(b.dataset.t==="girth")$("gcm").focus()});
+$("say").onclick=()=>{try{const t=!$("rt-girth").hidden?($("tap").innerText+". "+$("gout").innerText):!$("rt-must").hidden?($("tap").innerText+". "+$("rt-must").innerText):($("tap").innerText+". งานเดือนนี้ "+$("rt-todo").querySelector(".mo").innerText);
  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[✅❌⏰💧🌦️🌧️🍂🌱⏳]/g,""));u.lang="th-TH";u.rate=.85;
  const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith("th"));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){$("say").textContent="🔇 เครื่องนี้อ่านไม่ได้"}};
 if(!("speechSynthesis" in window))$("say").hidden=true;
