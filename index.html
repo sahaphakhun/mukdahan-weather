@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>อากาศมุกดาหาร</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+#map{height:420px;border-radius:10px;margin-block:10px}
+.tools{display:flex;flex-wrap:wrap;gap:8px}.tools button.on,.rpb.on{background:var(--acc);color:#fff}
+.coord{font-variant-numeric:tabular-nums;font-weight:600}
+.crops{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.crop{background:var(--bg);border-radius:10px;padding:10px 12px}.crop b{font-size:1.05rem}
+.meter{height:8px;border-radius:4px;background:var(--mute);opacity:.9;margin:6px 0;overflow:hidden}.meter i{display:block;height:100%}
+.g h4{margin:12px 0 4px;color:var(--acc)}.g ul{margin:0;padding-left:20px}.g li{margin-bottom:3px}
+.tools button.sm{padding:4px 10px;font-size:.85rem;margin-top:6px}
+.fz{background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px}.fn{font-size:1.15rem}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:6px;font-size:.95rem;color:var(--mute)}.fg b{display:block;color:var(--fg)}.fg .mute{display:block}
+.ni{display:block;width:100%;font:inherit;font-size:1.1rem;padding:8px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px}.sum>div{background:var(--bg);border-radius:10px;padding:10px 12px;color:var(--mute)}.sum b{display:block;font-size:1.4rem;color:var(--fg)}
+.sum .ok b{color:var(--acc)}.sum .no b{color:var(--bad)}summary{cursor:pointer;font-size:1rem}
+.lv{display:grid;gap:6px;margin-top:8px}.lr{display:grid;grid-template-columns:150px 1fr 130px;gap:10px;align-items:center;background:var(--bg);border-radius:10px;padding:8px 10px;border:2px solid transparent}
+.lr.best{border-color:var(--acc)}.ll b,.lp b{display:block}.ll .mute{display:block}.bar2{height:14px;border-radius:7px;background:color-mix(in srgb,var(--mute) 25%,transparent);overflow:hidden}.bar2 i{display:block;height:100%;background:var(--acc)}
+.lp{text-align:right;color:var(--mute)}.lp.ok b{color:var(--acc)}.lp.no b{color:var(--bad)}.lp em{display:block;font-style:normal;font-weight:700;color:var(--acc)}
+@media (max-width:560px){.lr{grid-template-columns:1fr 1fr}.lb{grid-column:1/-1;grid-row:2}}
+.rb{border:3px solid var(--acc)}.rbh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tapbig{display:flex;gap:14px;align-items:center;padding:14px;border-radius:14px;margin-top:10px;background:var(--bg)}
+.tapbig .ic{font-size:3.4rem;line-height:1}.tapbig b{display:block;font-size:1.6rem;line-height:1.3}.tapbig.ok{background:color-mix(in srgb,var(--acc) 16%,var(--card))}
+.tapbig.no{background:color-mix(in srgb,var(--bad) 16%,var(--card))}.tapbig.w{background:color-mix(in srgb,var(--warn) 18%,var(--card))}
+.nights{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.nights div{background:var(--bg);border-radius:10px;padding:8px 10px;font-size:.95rem}.nights b{display:block;font-size:1.1rem}
+.rtabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 8px}.rtabs button{font-size:1.05rem}.rtabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.todo{display:grid;gap:6px}.todo li{margin-bottom:4px}.mo{background:var(--bg);border-radius:10px;padding:10px 12px}.mo h4{margin:0 0 4px;color:var(--acc);font-size:1.1rem}
+.big2{font-size:1.15rem}.gi{display:flex;gap:8px;align-items:center;max-width:260px;margin-block:8px}.gi .ni{font-size:1.6rem;text-align:center}
+.prog{height:22px;border-radius:11px;background:color-mix(in srgb,var(--mute) 25%,transparent);overflow:hidden;margin:8px 0}.prog i{display:block;height:100%;background:var(--acc)}
+.yt{width:100%;border-collapse:collapse;min-width:520px}.yt td,.yt th{padding:6px 8px;border-bottom:1px solid color-mix(in srgb,var(--mute) 30%,transparent);text-align:right}.yt td:first-child,.yt th:first-child{text-align:left}.yt th{color:var(--mute);font-weight:600}.tyb.on{background:var(--acc);color:#fff}
+.chk{grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;color:var(--fg);font-size:1.05rem}.chk input{width:24px;height:24px}.chk .mute{width:100%}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:.9rem;color:var(--mute)}.facts .mute{display:block}.facts b{display:block;color:var(--fg);font-size:1.05rem}
+:root{--bg:#eef3ec;--card:#fff;--fg:#1d2a1f;--mute:#5d6b5f;--acc:#2f7d3b;--rain:#2a6fb0;--warn:#c07a12;--bad:#b23a2a;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#121a14;--card:#1b261e;--fg:#e4ede5;--mute:#9aab9d;--acc:#6cc27a;--rain:#6fb0ee;--warn:#e6a845;--bad:#ee7a6a;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:19px/1.6 Sarabun,Tahoma,sans-serif;padding:16px}
+.wrap{max-width:960px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.card{min-width:0}
+h1{margin:0;font-size:1.6rem}select,button{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.card{background:var(--card);border-radius:14px;padding:16px}
+.now{display:flex;flex-wrap:wrap;gap:20px;align-items:center}.big{font-size:3.4rem;font-weight:800;line-height:1}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;flex:1}
+.stats div{font-size:.9rem;color:var(--mute)}.stats b{display:block;font-size:1.2rem;color:var(--fg)}
+.tips{display:grid;gap:8px}.tip{padding:10px 12px;border-radius:10px;border-left:6px solid var(--acc);background:var(--bg)}
+.tip.w{border-color:var(--warn)}.tip.b{border-color:var(--bad)}
+.hours{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}.h{min-width:64px;text-align:center;font-size:.9rem}
+.bar{height:50px;display:flex;align-items:flex-end;justify-content:center}.bar i{width:14px;background:var(--rain);border-radius:3px 3px 0 0}
+.days{display:grid;gap:6px}.d{display:grid;grid-template-columns:62px 28px 1fr auto;font-size:.95rem;gap:8px;align-items:center}
+.mute{color:var(--mute);font-size:.92rem}.tn{font-variant-numeric:tabular-nums}
+</style></head><body><div class="wrap">
+<div class="top"><div><h1>🌾 อากาศมุกดาหาร สำหรับเกษตรกร</h1><div class="mute" id="upd">กำลังโหลด…</div></div>
+<div class="tools"><select id="amp" aria-label="อำเภอ"></select><select id="tb" aria-label="ตำบล"></select><button id="rf">รีเฟรช</button></div></div>
+<form class="card tools" id="sf" style="padding:12px"><input id="q" list="ql" placeholder="🔎 ค้นหา ตำบล / อำเภอ / หมู่บ้าน เช่น ดงหลวง, บ้านนาโสก" style="flex:1 1 260px;min-width:0;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"><datalist id="ql"></datalist><button>ค้นหา + ปักหมุด</button><span class="mute" id="sm" style="width:100%"></span></form>
+<div class="card rb" id="rubber"><div class="rbh"><h2 style="margin:0">🌳 สวนยาง</h2><button id="say" type="button">🔊 อ่านให้ฟัง</button></div>
+<div id="tap"><div class="mute">กำลังดูฝน…</div></div>
+<div class="rtabs" role="tablist"><button type="button" data-t="todo" class="on">📅 เดือนนี้ต้องทำอะไร</button><button type="button" data-t="girth">📏 กรีดได้หรือยัง</button></div>
+<div id="rt-todo"></div>
+<div id="rt-girth" hidden><div class="big2">วัดรอบต้นยาง <span class="mute">(วัดสูงจากดิน 150 ซม. ประมาณระดับอก)</span></div>
+<div class="gi"><input id="gcm" type="number" inputmode="decimal" min="0" max="200" placeholder="เช่น 42" class="ni" aria-label="รอบต้นเป็นเซนติเมตร"><span class="big2">ซม.</span></div>
+<div id="gout"></div></div></div>
+<div class="card"><h2 style="margin:0">🛰️ แผนที่ดาวเทียม · ดูพื้นที่เพาะปลูก</h2>
+<div class="mute">แตะบนแผนที่เพื่อเลือกแปลง แล้วระบบจะวิเคราะห์ว่าเหมาะกับพืชอะไร</div>
+<div id="map"></div>
+<div class="tools"><button id="gps">📍 ตำแหน่งของฉัน</button><button id="meas">📐 วัดพื้นที่แปลง</button><button id="clr" hidden>ล้างเส้นวัด</button>
+<span style="align-self:center">พิกัด: <span class="coord" id="xy">ยังไม่ได้เลือก</span> <button id="cp" hidden>คัดลอก</button> <a id="gm" hidden target="_blank">เปิดใน Google Maps</a></span></div>
+<div id="area" class="tip" hidden style="margin-top:10px"></div>
+<div id="suit" style="margin-top:12px"></div></div>
+<div class="card" id="guide"><h2 style="margin:0">📗 คู่มือปลูกพืชให้ได้ผลผลิตเยอะ คุ้มทุน</h2>
+<div class="mute">เลือกพืชเพื่อดูฤดูปลูก พันธุ์ ปุ๋ย การจัดการน้ำ การดูแล และเคล็ดลับเพิ่มกำไร (ปรับให้เข้ากับดินอีสาน)</div>
+<div class="tools" id="gtabs" style="margin-block:10px"></div><div id="gbody"></div></div>
+<div class="card" id="calc"><h2 style="margin:0">🧮 คิดปุ๋ยทั้งสวน และ กำไร-ขาดทุน</h2>
+<div class="mute">กรอกพืช อายุ และขนาดสวน แล้วระบบบอกว่าใส่ปุ๋ยอะไร ต้นละ/ไร่ละเท่าไร ทั้งสวนต้องซื้อกี่กระสอบ กี่ตัน</div>
+<div class="facts" style="margin-top:10px">
+<label>พืช<select id="cc" style="width:100%"><option value="rubber">🌳 ยางพารา</option><option value="rice">🌾 ข้าวนาปี</option><option value="cassava">🥔 มันสำปะหลัง</option><option value="cane">🎋 อ้อย</option><option value="corn">🌽 ข้าวโพดเลี้ยงสัตว์</option></select></label>
+<label id="cageL">อายุยาง<select id="cage" style="width:100%"></select></label>
+<label>พื้นที่ (ไร่)<input id="crai" type="number" min="0" step="0.5" value="10" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"></label>
+<label id="ctreeL">จำนวนต้น (ใส่เองได้)<input id="ctree" type="number" min="0" step="1" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"></label>
+</div><div id="cout" style="margin-top:12px;overflow-x:auto"></div></div>
+<div class="card now" id="now"></div>
+<div class="card"><h2 style="margin-top:0">คำแนะนำงานไร่นาวันนี้</h2><div class="tips" id="tips"></div></div>
+<div class="card"><h2 style="margin-top:0">24 ชั่วโมงข้างหน้า <span class="mute">(แท่งฟ้า = โอกาสฝนตก)</span></h2><div class="hours" id="hours"></div></div>
+<div class="card"><h2 style="margin-top:0">พยากรณ์ 7 วัน</h2><div class="days" id="days"></div></div>
+<div class="mute">ข้อมูลจาก Open-Meteo (อัปเดตอัตโนมัติทุก 10 นาที) · ใช้ประกอบการตัดสินใจ ควรดูประกาศกรมอุตุนิยมวิทยาร่วมด้วย</div>
+</div>
+<script>
+const A=[["อ.เมืองมุกดาหาร",16.545,104.723],["อ.นิคมคำสร้อย",16.333,104.549],["อ.ดอนตาล",16.306,104.913],["อ.ดงหลวง",16.818,104.530],["อ.คำชะอี",16.563,104.299],["อ.หว้านใหญ่",16.704,104.733],["อ.หนองสูง",16.478,104.335]];
+const W={0:["☀️","ฟ้าใส"],1:["🌤️","มีเมฆบางส่วน"],2:["⛅","มีเมฆบางส่วน"],3:["☁️","เมฆมาก"],45:["🌫️","หมอก"],48:["🌫️","หมอก"],51:["🌦️","ฝนปรอย"],53:["🌦️","ฝนปรอย"],55:["🌦️","ฝนปรอย"],61:["🌧️","ฝนเล็กน้อย"],63:["🌧️","ฝนปานกลาง"],65:["🌧️","ฝนหนัก"],80:["🌦️","ฝนซู่"],81:["🌧️","ฝนซู่"],82:["⛈️","ฝนซู่หนัก"],95:["⛈️","พายุฝนฟ้าคะนอง"],96:["⛈️","พายุ+ลูกเห็บ"],99:["⛈️","พายุ+ลูกเห็บ"]};
+const w=c=>W[c]||["🌡️","-"],$=id=>document.getElementById(id);
+const DAY=["อา.","จ.","อ.","พ.","พฤ.","ศ.","ส."];
+const sel=$("amp");A.forEach((a,i)=>sel.add(new Option(a[0],i)));try{sel.value=localStorage.amp||0}catch(e){}
+let P=null;
+async function load(){
+ const [n,la,lo]=P?[P[2]||("จุดที่เลือก "+P[0].toFixed(4)+", "+P[1].toFixed(4)),P[0],P[1]]:A[sel.value];
+ try{localStorage.amp=sel.value}catch(e){}
+ const u=`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&timezone=Asia%2FBangkok&forecast_days=7`+
+ `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m`+
+ `&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,soil_moisture_0_to_1cm`+
+ `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration,uv_index_max,wind_speed_10m_max`;
+ try{const d=await (await fetch(u)).json();render(d,n)}catch(e){$("upd").textContent="โหลดไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วกดรีเฟรช"}
+}
+function render(d,n){
+ try{renderTap(d)}catch(e){console.warn(e)}
+ const c=d.current,[ic,tx]=w(c.weather_code);
+ $("upd").textContent=`${n} · อัปเดต ${new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"})} น.`;
+ const H=d.hourly,i0=Math.max(0,H.time.findIndex(t=>new Date(t)>=new Date(Date.now()-36e5)));
+ const sl=k=>H[k].slice(i0,i0+24),pp=sl("precipitation_probability"),ws=sl("wind_speed_10m"),rh=sl("relative_humidity_2m"),sm=H.soil_moisture_0_to_1cm[i0];
+ $("now").innerHTML=`<div style="font-size:3.4rem">${ic}</div><div><div class="big tn">${Math.round(c.temperature_2m)}°</div><div>${tx}</div></div>
+ <div class="stats"><div>ร้อนจริงที่รู้สึก<b class="tn">${Math.round(c.apparent_temperature)}°C</b></div><div>อากาศชื้น<b class="tn">${c.relative_humidity_2m}%</b></div>
+ <div>ลม<b class="tn">${Math.round(c.wind_speed_10m)} กม./ชม.</b></div><div>ฝนตอนนี้<b class="tn">${c.precipitation} มม.</b></div>
+ <div>ดินชื้นแค่ไหน<b class="tn">${sm!=null?Math.round(sm*100)+"%":"-"}</b></div><div>แดดแรงวันนี้ (UV)<b class="tn">${d.daily.uv_index_max[0]}</b></div></div>`;
+ const T=[],D=d.daily,max6=Math.max(...pp.slice(0,6)),max12=Math.max(...pp.slice(0,12)),wind6=Math.max(...ws.slice(0,6));
+ if(max6<30&&wind6<15)T.push(["","✅ ฉีดยา/ฉีดปุ๋ยได้ — 6 ชม.ข้างหน้าฝนน้อย ลมไม่แรง (ช่วงเช้า-เย็นดีที่สุด)"]);
+ else T.push(["w",`⚠️ ยังไม่ควรฉีดยา — ${max6>=30?`โอกาสฝน ${max6}% ใน 6 ชม.`:`ลมแรงถึง ${Math.round(wind6)} กม./ชม.`} ยาจะโดนฝนล้างหรือลมพัดปลิว`]);
+ if(max12<20&&Math.min(...rh.slice(0,12))<70)T.push(["","✅ ตากข้าว/ตากผลผลิตได้ — 12 ชม.ข้างหน้าไม่น่ามีฝน"]);
+ else T.push(["w",`⚠️ ตากผลผลิตระวังฝน — โอกาสฝนสูงสุด ${max12}% ใน 12 ชม. เตรียมผ้าใบ`]);
+ const need=D.et0_fao_evapotranspiration[0]-D.precipitation_sum[0];
+ T.push(need>3?["w",`💧 ควรให้น้ำพืช — วันนี้พืชเสียน้ำไปประมาณ ${D.et0_fao_evapotranspiration[0].toFixed(1)} มม. ฝนชดเชยได้แค่ ${D.precipitation_sum[0]} มม.`]:["",`💧 น้ำเพียงพอ — ฝนวันนี้ ${D.precipitation_sum[0]} มม. งดหรือลดการให้น้ำได้`]);
+ const wk=D.precipitation_sum.reduce((a,b)=>a+b,0);if(wk>60)T.push(["b",`🌊 สัปดาห์นี้ฝนรวม ~${Math.round(wk)} มม. เตรียมทางระบายน้ำในแปลง ระวังน้ำขัง/รากเน่า`]);
+ if(D.temperature_2m_max[0]>=36)T.push(["b","🔥 ร้อนจัด — ให้น้ำสัตว์เพียงพอ เลี่ยงทำงานกลางแดด 11-15 น."]);
+ if(D.weather_code.slice(0,2).some(x=>x>=95))T.push(["b","⛈️ มีพายุฝนฟ้าคะนองใน 2 วันนี้ — ค้ำยันต้นไม้/โรงเรือน ระวังฟ้าผ่าในที่โล่ง"]);
+ if(rh.slice(0,12).filter(x=>x>=90).length>=6)T.push(["w","🍄 ความชื้นสูงต่อเนื่อง — ระวังโรคจากเชื้อรา เช่น ใบไหม้ในนาข้าว"]);
+ $("tips").innerHTML=T.map(([k,t])=>`<div class="tip ${k}">${t}</div>`).join("");
+ const tm=sl("time"),tt=sl("temperature_2m"),wc=sl("weather_code");
+ $("hours").innerHTML=tm.map((t,j)=>`<div class="h"><div class="mute">${t.slice(11,16)}</div><div>${w(wc[j])[0]}</div><div class="tn">${Math.round(tt[j])}°</div><div class="bar"><i style="height:${pp[j]/2}px"></i></div><div class="tn" style="color:var(--rain)">${pp[j]}%</div></div>`).join("");
+ $("days").innerHTML=D.time.map((t,j)=>{const dt=new Date(t);return `<div class="d"><span>${j?DAY[dt.getDay()]+" "+dt.getDate():"วันนี้"}</span><span>${w(D.weather_code[j])[0]}</span>
+ <span class="tn" style="color:var(--rain)">ฝน ${D.precipitation_probability_max[j]}% · ${D.precipitation_sum[j]} มม.</span><span class="tn">${Math.round(D.temperature_2m_min[j])}°–${Math.round(D.temperature_2m_max[j])}°</span></div>`}).join("");
+}
+sel.onchange=()=>{fillTb();P=null;map.setView([A[sel.value][1],A[sel.value][2]],12);load()};$("rf").onclick=load;load();setInterval(load,6e5);
+
+/* ---------- แผนที่ดาวเทียม + วิเคราะห์พื้นที่ ---------- */
+const map=L.map("map").setView([16.55,104.55],10);
+const sat=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"ภาพดาวเทียม © Esri"}).addTo(map);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}).addTo(map);
+const road=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"});
+L.control.layers({"ดาวเทียม":sat,"แผนที่ถนน":road}).addTo(map);
+A.forEach(a=>L.circleMarker([a[1],a[2]],{radius:4,color:"#fff",weight:1,fillColor:"#2f7d3b",fillOpacity:1}).addTo(map).bindTooltip(a[0]));
+let mk=null,measuring=false,pts=[],poly=null,dots=[];
+map.on("click",e=>measuring?addPt(e.latlng):pick(e.latlng.lat,e.latlng.lng));
+$("gps").onclick=()=>{if(!navigator.geolocation)return;$("gps").textContent="📍 กำลังหาตำแหน่ง…";
+ navigator.geolocation.getCurrentPosition(p=>{$("gps").textContent="📍 ตำแหน่งของฉัน";map.setView([p.coords.latitude,p.coords.longitude],16);pick(p.coords.latitude,p.coords.longitude)},
+ ()=>{$("gps").textContent="📍 ตำแหน่งของฉัน";$("suit").innerHTML='<div class="tip w">หาตำแหน่งไม่ได้ ให้อนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์ หรือแตะเลือกบนแผนที่แทน</div>'},{enableHighAccuracy:true,timeout:15000})};
+$("meas").onclick=()=>{measuring=!measuring;$("meas").classList.toggle("on",measuring);$("meas").textContent=measuring?"✔ วัดเสร็จ":"📐 วัดพื้นที่แปลง";
+ if(measuring){clearM();$("area").hidden=false;$("area").textContent="แตะมุมแปลงทีละจุดรอบแปลง (อย่างน้อย 3 จุด)"}};
+$("clr").onclick=()=>{clearM();$("area").hidden=true};
+$("cp").onclick=()=>{const t=$("xy").textContent;navigator.clipboard?.writeText(t).then(()=>{$("cp").textContent="คัดลอกแล้ว"},()=>{})};
+function clearM(){pts=[];dots.forEach(d=>d.remove());dots=[];poly?.remove();poly=null;$("clr").hidden=true}
+function addPt(ll){pts.push(ll);dots.push(L.circleMarker(ll,{radius:5,color:"#ffd400",fillOpacity:1}).addTo(map));
+ poly?.remove();poly=L.polygon(pts,{color:"#ffd400",weight:2,fillOpacity:.2}).addTo(map);$("clr").hidden=false;
+ if(pts.length<3){$("area").textContent=`แตะเพิ่มอีก ${3-pts.length} จุด`;return}
+ const m2=geoArea(pts),rai=Math.floor(m2/1600),ngan=Math.floor(m2%1600/400),wa=Math.round(m2%400/4);
+ $("area").innerHTML=`📐 พื้นที่แปลงประมาณ <b>${rai} ไร่ ${ngan} งาน ${wa} ตร.วา</b> <span class="mute">(${Math.round(m2).toLocaleString()} ตร.ม. · ${pts.length} มุม)</span>`}
+function geoArea(p){const R=6378137,r=Math.PI/180;let s=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];s+=(b.lng-a.lng)*r*(2+Math.sin(a.lat*r)+Math.sin(b.lat*r))}return Math.abs(s*R*R/2)}
+
+async function pick(la,lo,label){
+ P=[la,lo,label];mk?mk.setLatLng([la,lo]):mk=L.marker([la,lo]).addTo(map);
+ const t=`${la.toFixed(5)}, ${lo.toFixed(5)}`;$("xy").textContent=t;$("cp").hidden=false;$("cp").textContent="คัดลอก";
+ $("gm").hidden=false;$("gm").href=`https://www.google.com/maps?q=${la},${lo}`;
+ if(!label)tbSel.value="";load();
+ $("suit").innerHTML='<div class="mute">กำลังวิเคราะห์พื้นที่ (ฝนทั้งปี · ความสูง · ความลาดชัน · ดิน)…</div>';
+ const d=.0045,y=new Date().getFullYear()-1; // ~500 ม.
+ const lats=[la,la+d,la-d,la,la,la+d/5,la-d/5].join(),lons=[lo,lo,lo,lo+d,lo-d,lo,lo].join();
+ const [ev,cl,soil]=await Promise.all([
+  fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lons}`).then(r=>r.json()).catch(()=>null),
+  fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${la}&longitude=${lo}&start_date=${y}-01-01&end_date=${y}-12-31&daily=precipitation_sum,temperature_2m_mean&timezone=Asia%2FBangkok`).then(r=>r.json()).catch(()=>null),
+  getSoil(la,lo)]);
+ if(P[0]!==la||P[1]!==lo)return;
+ analyse(ev?.elevation,cl?.daily,soil,y);
+}
+/* ดึงค่าดิน SoilGrids ผ่าน WCS (GeoTIFF เล็ก ๆ) แล้วอ่านค่าพิกเซลกลาง */
+async function soilPix(prop,depth,la,lo,signal){
+ const d=.01,u=`https://maps.isric.org/mapserv?map=/map/${prop}.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&COVERAGEID=${prop}_${depth}_mean&FORMAT=image/tiff`+
+  `&SUBSET=X(${lo-d},${lo+d})&SUBSET=Y(${la-d},${la+d})&SUBSETTINGCRS=http://www.opengis.net/def/crs/EPSG/0/4326&OUTPUTCRS=http://www.opengis.net/def/crs/EPSG/0/4326`;
+ const b=new DataView(await (await fetch(u,{signal})).arrayBuffer()),le=b.getUint16(0)===0x4949;
+ const u16=o=>b.getUint16(o,le),u32=o=>b.getUint32(o,le),T={};let off=u32(4);const n=u16(off);
+ for(let i=0;i<n;i++){const e=off+2+i*12,t=u16(e),ty=u16(e+2),c=u32(e+4);T[t]=c===1?(ty===3?u16(e+8):u32(e+8)):u32(e+8)}
+ const W=T[256],Hh=T[257],tw=T[322]||W,comp=T[259]||1,pred=T[317]||1;
+ const o=T[324]??T[273],len=T[325]??T[279];let raw=new Uint8Array(b.buffer,o,len);
+ if(comp===8||comp===32946)raw=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate"))).arrayBuffer());
+ else if(comp!==1)throw new Error("tiff comp "+comp);
+ const v=new DataView(raw.buffer),cx=(W-1)/2,cy=(Hh-1)/2;let best=null,bd=1e9;
+ for(let y=0;y<Hh;y++){let val=0;for(let x=0;x<W;x++){const s=v.getInt16((y*tw+x)*2,le);val=pred===2?(x?(val+s)<<16>>16:s):s;
+  if(val>0){const dd=(x-cx)**2+(y-cy)**2;if(dd<bd){bd=dd;best=val}}}}
+ return best; // 0 / -32768 = เมือง แม่น้ำ หรือไม่มีข้อมูล
+}
+async function getSoil(la,lo){
+ const c=new AbortController();setTimeout(()=>c.abort(),30000);
+ try{const q=(p,dp)=>soilPix(p,dp,la,lo,c.signal).catch(()=>null);
+  const [p1,p2,c1,c2,s1,s2,o1]=await Promise.all([q("phh2o","0-5cm"),q("phh2o","15-30cm"),q("clay","0-5cm"),q("clay","15-30cm"),q("sand","0-5cm"),q("sand","15-30cm"),q("soc","0-5cm")]);
+  const av=(a,b,f)=>a==null&&b==null?null:((a??b)+(b??a))/2/f;
+  const s={ph:av(p1,p2,10),clay:av(c1,c2,10),sand:av(s1,s2,10),soc:o1==null?null:o1/10};
+  return s.ph==null&&s.clay==null?null:s}catch(e){return null}}
+function analyse(E,C,S,y){
+ const el=E?.[0],ring=E?(E[1]+E[2]+E[3]+E[4])/4:null;
+ const slope=E?Math.max(Math.abs(E[5]-E[6])/(2*.0009*111000),Math.abs(E[1]-E[2])/(2*.0045*111000))*100:null;
+ const low=E?el<ring-2:null,rain=C?C.precipitation_sum.reduce((a,b)=>a+(b||0),0):null,temp=C?C.temperature_2m_mean.reduce((a,b)=>a+b,0)/C.temperature_2m_mean.length:null;
+ const tex=S?(S.clay>=40?"ดินเหนียว":S.sand>=60?"ดินทราย":S.sand>=45?"ดินร่วนปนทราย":"ดินร่วน"):null;
+ const crops=[
+  {k:"rice",n:"🌾 ข้าวนาปี",rain:[1000,2500],slope:2,ph:[5,7],low:1,clay:1},
+  {k:"cassava",n:"🥔 มันสำปะหลัง",rain:[800,1800],slope:8,ph:[4.5,7],low:-1,sand:1},
+  {k:"cane",n:"🎋 อ้อย",rain:[1000,2000],slope:8,ph:[5.5,7.5],low:-1},
+  {k:"rubber",n:"🌳 ยางพารา",rain:[1250,3000],slope:15,ph:[4.5,6.5],low:-1},
+  {k:"corn",n:"🌽 ข้าวโพดเลี้ยงสัตว์",rain:[800,1600],slope:8,ph:[5.5,7.5],low:-1},
+  {k:"veg",n:"🥬 พืชผัก (ต้องมีน้ำรด)",rain:[0,9999],slope:5,ph:[6,7],low:0}];
+ const out=crops.map(c=>{let s=100,why=[];
+  if(rain!=null){if(rain<c.rain[0]){s-=Math.min(40,(c.rain[0]-rain)/10);why.push(`ฝนน้อยไป (พืชนี้ต้องการฝนปีละ ${c.rain[0]} มม. ขึ้นไป)`)}else if(rain>c.rain[1]){s-=20;why.push("ฝนมากเกินไป")}}
+  if(slope!=null&&slope>c.slope){s-=Math.min(45,10+(slope-c.slope)*6);why.push(`พื้นที่ลาดเอียงเกิน ${c.slope}%`)}
+  if(low!=null&&c.low===1&&!low){s-=30;why.push("เป็นที่ดอน น้ำขังยาก ต้องมีคันนา/แหล่งน้ำ")}
+  if(low!=null&&c.low===-1&&low){s-=30;why.push("เป็นที่ลุ่ม เสี่ยงน้ำขัง")}
+  if(S){if(S.ph<c.ph[0]){s-=15;why.push(`ดินเปรี้ยว ควรใส่ปูนโดโลไมท์ก่อนปลูก`)}else if(S.ph>c.ph[1]){s-=15;why.push(`ดินด่างเกินไป`)}
+   if(c.clay&&S.clay<25){s-=15;why.push("ดินไม่ค่อยเก็บน้ำ")} if(c.sand&&S.clay>45){s-=15;why.push("ดินเหนียวไป หัวลงยาก")}}
+  if(!why.length)why.push("ฝน ความสูง และความลาดของพื้นที่ เหมาะดี");return{...c,s:Math.max(0,Math.round(s)),why}}).sort((a,b)=>b.s-a.s);
+ const lv=s=>s>=85?["เหมาะมาก","var(--acc)"]:s>=65?["พอใช้","var(--warn)"]:["ไม่ค่อยเหมาะ","var(--bad)"];
+ $("suit").innerHTML=`<h3 style="margin:0 0 8px">ข้อมูลพื้นที่จุดนี้</h3><div class="facts">
+ <div>ความสูงของพื้นที่ (จากระดับทะเล)<b>${el!=null?Math.round(el)+" ม.":"-"}</b></div>
+ <div>ลักษณะพื้นที่<b>${low==null?"-":low?"ที่ลุ่ม (ต่ำกว่ารอบข้าง)":"ที่ดอน/ที่ราบ"}</b></div>
+ <div>พื้นเอียง/ลาด (ประมาณ)<b>${slope!=null?slope.toFixed(1)+"%":"-"}</b></div>
+ <div>ฝนรวมปี ${y+543}<b>${rain!=null?Math.round(rain).toLocaleString()+" มม.":"-"}</b></div>
+ <div>อุณหภูมิเฉลี่ยทั้งปี<b>${temp!=null?temp.toFixed(1)+"°C":"-"}</b></div>
+ <div>ดิน<b>${S?tex:"ดึงข้อมูลดินไม่ได้"}</b>${S?`<span class="mute">ดินเหนียว ${Math.round(S.clay)}% · ทราย ${Math.round(S.sand)}%</span>`:""}</div><div>ดินเปรี้ยว-ด่าง<b>${S?.ph!=null?(S.ph<5?"เปรี้ยวจัด":S.ph<5.5?"เปรี้ยว":S.ph<6.5?"เปรี้ยวเล็กน้อย (ดี)":S.ph<7.5?"กลาง ๆ (ดี)":"ด่าง")+` · pH ${S.ph.toFixed(1)}`:"-"}</b>${S?.ph!=null&&S.ph<5.5?`<span class="mute">ใส่ปูนโดโลไมท์ไร่ละ 100–200 กิโล ช่วยได้</span>`:""}</div><div>ความอุดมของดิน<b>${S?.soc!=null?(S.soc<10?"ต่ำ ควรเพิ่มปุ๋ยคอก":S.soc<20?"ปานกลาง":"ค่อนข้างดี"):"-"}</b>${S?.soc!=null?`<span class="mute">อินทรียวัตถุ ${f1(S.soc/10*1.72)}%</span>`:""}</div></div>
+ <h3 style="margin:14px 0 0">พืชที่เหมาะกับจุดนี้</h3><div class="crops">${out.map(c=>{const[l,col]=lv(c.s);return`<div class="crop"><b>${c.n}</b> <span style="color:${col};font-weight:700">${l}</span>
+ <div class="meter"><i style="width:${c.s}%;background:${col}"></i></div><div class="mute">${c.why.join(" · ")}</div><div class="tools"><button class="sm" onclick="showGuide('${c.k}')">วิธีปลูกให้ได้ผลดี →</button></div></div>`}).join("")}</div>
+ <div class="mute" style="margin-top:8px">เป็นการดูคร่าว ๆ จากภาพดาวเทียมและสถิติฝน${S?"":" (ดึงข้อมูลดินไม่ได้ จึงยังไม่ได้รวมค่าดิน)"} ข้อมูลดินมาจากแผนที่ดินโลก (SoilGrids) ละเอียดราว 250 เมตร ก่อนลงทุนจริงควรส่งดินตรวจฟรีที่สถานีพัฒนาที่ดินมุกดาหาร</div>`;
+}
+
+/* ---------- ตำบล + ค้นหา ---------- */
+const TB=[["มุกดาหาร","เมืองมุกดาหาร",16.5414,104.7291],["ศรีบุญเรือง","เมืองมุกดาหาร",16.5331,104.6474,1],["บ้านโคก","เมืองมุกดาหาร",16.4108,104.8483],["บางทรายใหญ่","เมืองมุกดาหาร",16.6114,104.7353],["โพนทราย","เมืองมุกดาหาร",16.5698,104.6027],["ผึ่งแดด","เมืองมุกดาหาร",16.6241,104.4861],["นาโสก","เมืองมุกดาหาร",16.511,104.5163],["นาสีนวน","เมืองมุกดาหาร",16.4625,104.8014],["คำป่าหลาย","เมืองมุกดาหาร",16.7237,104.6668],["คำอาฮวน","เมืองมุกดาหาร",16.4984,104.6722],["ดงเย็น","เมืองมุกดาหาร",16.3842,104.6973],["ดงมอน","เมืองมุกดาหาร",16.6603,104.5015],["กุดแข้","เมืองมุกดาหาร",16.5872,104.5687],["นิคมคำสร้อย","นิคมคำสร้อย",16.3749,104.5497],["นากอก","นิคมคำสร้อย",16.3397,104.5349,1],["หนองแวง","นิคมคำสร้อย",16.3486,104.5022],["กกแดง","นิคมคำสร้อย",16.3397,104.5349,1],["นาอุดม","นิคมคำสร้อย",16.2402,104.6129],["โชคชัย","นิคมคำสร้อย",16.3544,104.4854],["ร่มเกล้า","นิคมคำสร้อย",16.388,104.4522],["ดอนตาล","ดอนตาล",16.3156,104.9261],["โพธิ์ไทร","ดอนตาล",16.3881,104.8579],["ป่าไร่","ดอนตาล",16.2285,104.7297],["เหล่าหมี","ดอนตาล",16.3384,104.8072],["บ้านบาก","ดอนตาล",16.2271,104.8599],["นาสะเม็ง","ดอนตาล",16.3382,104.8449],["บ้านแก้ง","ดอนตาล",16.4103,104.8209],["ดงหลวง","ดงหลวง",16.8185,104.5394],["หนองบัว","ดงหลวง",16.7834,104.3653,1],["กกตูม","ดงหลวง",16.8422,104.236],["หนองแคน","ดงหลวง",16.7568,104.5071],["ชะโนดน้อย","ดงหลวง",16.7834,104.3653,1],["พังแดง","ดงหลวง",16.7834,104.3653,1],["บ้านซ่ง","คำชะอี",16.5945,104.4298],["คำชะอี","คำชะอี",16.5786,104.4208],["หนองเอี่ยน","คำชะอี",16.5435,104.4113],["บ้านค้อ","คำชะอี",16.6124,104.3445,1],["บ้านเหล่า","คำชะอี",16.6124,104.3445,1],["โพนงาม","คำชะอี",16.6124,104.3445,1],["เหล่าสร้างถ่อ","คำชะอี",16.6124,104.3445,1],["คำบก","คำชะอี",16.6124,104.3445,1],["น้ำเที่ยง","คำชะอี",16.6124,104.3445,1],["หว้านใหญ่","หว้านใหญ่",16.7143,104.7545],["ป่งขาม","หว้านใหญ่",16.7282,104.7282,1],["บางทรายน้อย","หว้านใหญ่",16.7282,104.7282,1],["ชะโนด","หว้านใหญ่",16.6806,104.7518],["ดงหมู","หว้านใหญ่",16.7282,104.7282,1],["หนองสูง","หนองสูง",16.482,104.3518],["โนนยาง","หนองสูง",16.4535,104.2627],["ภูวง","หนองสูง",16.4539,104.3884],["บ้านเป้า","หนองสูง",16.4219,104.3377],["หนองสูงใต้","หนองสูง",16.4344,104.3482,1],["หนองสูงเหนือ","หนองสูง",16.4819,104.3515]];
+const tbSel=$("tb"),aName=i=>A[i][0].replace("อ.","");
+function fillTb(){tbSel.innerHTML="";tbSel.add(new Option("— ทุกตำบล —",""));if(sel.value==="p"){tbSel.disabled=true;return}tbSel.disabled=false;
+ TB.filter(t=>t[1]===aName(sel.value)).forEach(t=>tbSel.add(new Option("ต."+t[0],t[0])))}
+fillTb();
+function goTb(t){const lab=`ต.${t[0]} อ.${t[1]}`+(t[4]?" (ตำแหน่งโดยประมาณ)":"");map.setView([t[2],t[3]],t[4]?11:14);pick(t[2],t[3],lab);
+ $("sm").textContent=t[4]?`ปักหมุดที่กลางอำเภอ${t[1]} เพราะยังไม่มีพิกัดกลางตำบล${t[0]} แตะบนแผนที่ตรงแปลงจริงได้เลย`:`ปักหมุด ต.${t[0]} อ.${t[1]} แล้ว`;
+ document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})}
+tbSel.onchange=()=>{const t=TB.find(x=>x[0]===tbSel.value&&x[1]===aName(sel.value));if(t)goTb(t)};
+const ql=$("ql");TB.forEach(t=>ql.append(new Option(`ต.${t[0]} อ.${t[1]}`)));A.forEach(a=>ql.append(new Option(a[0])));
+$("sf").onsubmit=async e=>{e.preventDefault();const q=$("q").value.trim().replace(/^(ต\.|ตำบล)/,"");if(!q)return;
+ const tn=q.split(/\s+อ\.|\s+อำเภอ/)[0].trim();
+ const t=TB.find(x=>x[0]===tn)||TB.find(x=>x[0].includes(tn)||tn.includes(x[0]));
+ if(t){sel.value=A.findIndex(a=>a[0]==="อ."+t[1]);fillTb();tbSel.value=t[0];return goTb(t)}
+ const ai=A.findIndex(a=>a[0].includes(q.replace(/^(อ\.|อำเภอ)/,"")));
+ if(ai>=0){sel.value=ai;fillTb();map.setView([A[ai][1],A[ai][2]],12);pick(A[ai][1],A[ai][2],A[ai][0]);$("sm").textContent=`ปักหมุด ${A[ai][0]} แล้ว`;return}
+ $("sm").textContent="กำลังค้นหา…";
+ try{const j=await (await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=10&bounded=1&viewbox=104.1,17.0,105.0,16.1&accept-language=th&q="+encodeURIComponent(q))).json();
+  const k=j.find(x=>x.display_name.includes("จังหวัดมุกดาหาร"));if(!k){$("sm").textContent=`ไม่พบ "${q}" ในจังหวัดมุกดาหาร ลองพิมพ์ชื่อตำบลหรืออำเภอ หรือแตะบนแผนที่แทน`;return}
+  const la=+k.lat,lo=+k.lon,nm=k.display_name.split(",").slice(0,3).join(",");map.setView([la,lo],15);pick(la,lo,nm);$("sm").textContent="ปักหมุด: "+nm;
+  document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"})}catch(err){$("sm").textContent="ค้นหาไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วลองใหม่"}};
+
+/* ---------- คู่มือปลูกพืช ---------- */
+const G={
+rice:{n:"🌾 ข้าวนาปี",m:[6,7,8],s:[
+["ฤดูปลูก/พันธุ์",["ตกกล้า มิ.ย.–ก.ค. ปักดำหรือหว่าน ก.ค.–ส.ค. เกี่ยว พ.ย.–ธ.ค.","ข้าวเหนียว: กข6 (หอม นุ่ม), กข22 · ข้าวเจ้า: ขาวดอกมะลิ 105, กข15 (เกี่ยวเร็ว หนีแล้ง)","เปลี่ยนเมล็ดพันธุ์ใหม่ทุก 2–3 ปี (ศูนย์เมล็ดพันธุ์ข้าว/สหกรณ์) ผลผลิตเพิ่มได้ราว 10–20%"]],
+["เตรียมดิน",["ไถกลบตอซังแทนการเผา เพิ่มอินทรียวัตถุในดิน","ก่อนทำนาหว่านปอเทือง 5 กก./ไร่ แล้วไถกลบตอนออกดอก เป็นปุ๋ยพืชสด ลดปุ๋ยเคมีได้","ดินเปรี้ยว (pH ต่ำกว่า 5) ใส่ปูนโดโลไมท์ 100–200 กก./ไร่ ก่อนไถ"]],
+["ปุ๋ย (ดินร่วนปนทรายแบบอีสาน)",["ครั้งที่ 1: 16-16-8 อัตรา 25–30 กก./ไร่ หลังปักดำ 15–20 วัน (นาหว่าน 20–25 วัน)","ครั้งที่ 2: 46-0-0 อัตรา 5–10 กก./ไร่ ช่วงข้าวตั้งท้อง (ข้าวไวแสงประมาณปลาย ส.ค.–ก.ย.)","ดินเหนียวใช้ 16-20-0 แทน 16-16-8 · ใส่ตอนน้ำในนาพอดิน ไม่ใส่ตอนน้ำไหลออก","ดีที่สุดคือปุ๋ยสั่งตัดตามค่าวิเคราะห์ดิน ประหยัดค่าปุ๋ยได้ราว 20–30%"]],
+["จัดการน้ำ",["หลังปักดำรักษาระดับน้ำ 5–10 ซม. อย่าให้ท่วมยอด","ช่วงแตกกอ ปล่อยแห้งสลับขังได้ (เปียกสลับแห้ง) รากแข็งแรง โรคน้อย","ช่วงตั้งท้อง–ออกดอก ห้ามขาดน้ำ เป็นช่วงที่กระทบผลผลิตมากที่สุด","ระบายน้ำออก 7–10 วันก่อนเกี่ยว ข้าวสุกพร้อมกัน เกี่ยวง่าย"]],
+["ดูแล/โรคแมลง",["โรคไหม้: มักเกิดเมื่ออากาศชื้น ใบเป็นแผลรูปตา งดปุ๋ยยูเรียชั่วคราว","เพลี้ยกระโดดสีน้ำตาล: อย่าหว่านแน่นเกิน อย่าใส่ยูเรียมากเกิน สำรวจโคนกอทุกสัปดาห์","กำจัดวัชพืชให้ดีในช่วง 30 วันแรก"]],
+["ผลผลิตและความคุ้ม",["ผลผลิตเฉลี่ยอีสานราว 350–400 กก./ไร่ ดูแลครบตามนี้ได้ 450–550 กก./ไร่","ต้นทุนประมาณ 4,000–5,500 บาท/ไร่","เกี่ยวหลังออกดอกราว 28–30 วัน (สุก 80–85%) ได้เมล็ดเต็ม ราคาดี","ตากให้ความชื้นเหลือไม่เกิน 15% ก่อนขาย จะไม่ถูกหักราคา"]]]},
+rubber:{n:"🌳 ยางพารา",m:[5,6,7],s:[
+["ฤดูปลูก/พันธุ์",["ปลูกต้นฤดูฝน พ.ค.–ก.ค. ให้ต้นตั้งตัวก่อนหน้าแล้ง","พันธุ์แนะนำ: RRIM 600, RRIT 251, RRIT 408","ระยะปลูก 2.5 × 7 ม. หรือ 3 × 7 ม. (ประมาณ 76–80 ต้น/ไร่)","ไม่เหมาะกับที่ลุ่มน้ำขัง และพื้นที่ฝนน้อยกว่าราว 1,250 มม./ปี"]],
+["ปุ๋ย",["ยางก่อนเปิดกรีด (ดินร่วนปนทราย): 20-8-20 แบ่งใส่ต้นฝนและปลายฝน ปีละ 2 ครั้ง","อายุ 1–3 ปี 50–200 กรัม/ต้น/ครั้ง เพิ่มตามอายุ · ปีที่ 4–6 ราว 300–400 กรัม/ต้น/ครั้ง","ยางเปิดกรีดแล้ว: 30-5-18 อัตรา 0.5–1 กก./ต้น/ปี แบ่ง 2 ครั้ง","หว่านรอบทรงพุ่มแล้วคราดกลบบาง ๆ ใส่ปุ๋ยคอกเสริม 2–3 กก./ต้น/ปี"]],
+["จัดการน้ำ/ดิน",["ยางเล็กหน้าแล้ง: คลุมโคนด้วยฟางหรือหญ้าแห้ง ลดต้นตาย","ปลูกพืชคลุมดินตระกูลถั่วระหว่างแถว รักษาความชื้น","ห้ามเผาหญ้าในสวน ไฟลามทำลายเปลือกยาง"]],
+["กรีดให้ได้น้ำยางมาก",["เปิดกรีดเมื่อเส้นรอบต้นอย่างน้อย 50 ซม. ที่ความสูง 150 ซม. (ราว 6–7 ปี)","กรีดครึ่งต้นวันเว้นวัน หรือ 1/3 ต้นวันเว้นสองวัน ถนอมต้น กรีดได้นาน","กรีดช่วงเช้ามืด (ตี 2–6) น้ำยางไหลดีที่สุด ไม่กรีดตอนเปลือกเปียกฝน","หยุดกรีดช่วงผลัดใบ (ประมาณ ก.พ.–เม.ย.)"]],
+["ดูแล/โรค",["โรคเส้นดำหน้ากรีดช่วงฝนชุก: ทาหน้ากรีดด้วยเมทาแลกซิล","โรคราแป้งช่วงผลิใบใหม่: ตัดแต่งให้สวนโปร่ง"]],
+["ผลผลิตและความคุ้ม",["ผลผลิตยางแผ่นราว 250–300 กก./ไร่/ปี","ช่วงรอ 6–7 ปียังไม่มีรายได้: ปลูกพืชแซมใน 1–3 ปีแรก เช่น มันสำปะหลัง สับปะรด ถั่ว","รวมกลุ่มทำยางแผ่นรมควัน หรือขายตลาดกลาง กยท. ได้ราคาดีกว่าขายรายเล็ก","เป็นสมาชิก กยท. รับทุนปลูกแทนและสวัสดิการ"]]]},
+cassava:{n:"🥔 มันสำปะหลัง",m:[4,5,10,11],s:[
+["ฤดูปลูก/พันธุ์",["ต้นฝน เม.ย.–พ.ค. หรือปลายฝน ต.ค.–พ.ย. (ปลายฝนโรคแมลงน้อย)","พันธุ์: เกษตรศาสตร์ 50, ระยอง 72, ห้วยบง 80 · ใช้ท่อนพันธุ์สะอาดจากแปลงที่ไม่มีโรคใบด่าง","ระยะ 1 × 1 ม. (1,600 ต้น/ไร่) ท่อนยาว 20–25 ซม. ปักลึกครึ่งท่อน"]],
+["ปุ๋ย",["ดินทราย: 15-7-18 หรือ 16-8-24 อัตรา 50 กก./ไร่ ใส่ตอนอายุ 1–3 เดือน ข้างแถวแล้วกลบ","ปุ๋ยคอก/ปุ๋ยหมัก 1 ตัน/ไร่ ช่วยให้หัวใหญ่ขึ้นชัดเจน","มันต้องการโพแทสเซียม (ตัวเลขตัวท้าย) สูง ช่วยให้หัวโตและเชื้อแป้งสูง"]],
+["จัดการน้ำ",["ทนแล้ง แต่ถ้าให้น้ำหยดช่วงแล้ง ผลผลิตเพิ่มขึ้นได้มาก","ยกร่องในพื้นที่ที่น้ำขัง หัวเน่าง่าย"]],
+["ดูแล/โรค",["กำจัดวัชพืชให้หมดในช่วง 3 เดือนแรก","โรคใบด่าง: เจอต้นใบด่างให้ถอนทำลายทันที แล้วแจ้งเกษตรอำเภอ","เพลี้ยแป้ง: แช่ท่อนพันธุ์ด้วยไทอะมีโทแซมก่อนปลูก"]],
+["ผลผลิตและความคุ้ม",["เก็บเกี่ยวอายุ 10–12 เดือน ผลผลิตราว 3.5–5 ตัน/ไร่ (มีน้ำหยดได้ 6–8 ตัน)","ขุดช่วงหนาว–แล้ง เชื้อแป้งสูง ได้ราคาดีกว่า","ต้นทุนประมาณ 5,000–6,500 บาท/ไร่"]]]},
+cane:{n:"🎋 อ้อย",m:[10,11,12],s:[
+["ฤดูปลูก/พันธุ์",["ดีที่สุด: อ้อยข้ามแล้ง ปลูกปลายฝน ต.ค.–ธ.ค. ใช้ความชื้นที่เหลือในดิน","พันธุ์: ขอนแก่น 3, LK92-11, KK07-037","⚠️ ทำสัญญาหรือโควตากับโรงงานน้ำตาลก่อนปลูกทุกครั้ง"]],
+["ปุ๋ย",["รองพื้น: 15-15-15 หรือ 16-16-8 อัตรา 50 กก./ไร่","แต่งหน้า: 46-0-0 อัตรา 20–25 กก./ไร่ ตอนอายุ 3–4 เดือน (ดินมีความชื้น)"]],
+["จัดการน้ำ/ดูแล",["ไถลึก 30–40 ซม. ทำลายชั้นดินดาน รากลงลึกหาน้ำได้","ไว้ตอได้ 2–3 ปี ใส่ปุ๋ยและกำจัดวัชพืชหลังตัดทุกครั้ง","ห้ามเผาอ้อยก่อนตัด โรงงานหักราคา และดินเสื่อม"]],
+["ผลผลิตและความคุ้ม",["ผลผลิตราว 12–15 ตัน/ไร่ (มีน้ำเสริมได้ 18–20 ตัน)","ค่าความหวาน (CCS) สูง ได้เงินมากขึ้น ตัดเมื่ออายุครบ 11–12 เดือน"]]]},
+corn:{n:"🌽 ข้าวโพดเลี้ยงสัตว์",m:[5,6],s:[
+["ฤดูปลูก/พันธุ์",["ต้นฝน พ.ค.–มิ.ย. หรือหลังนา (ต้องมีน้ำ)","ใช้พันธุ์ลูกผสมทนแล้ง ระยะ 75 × 20 ซม. (ประมาณ 10,000 ต้น/ไร่)"]],
+["ปุ๋ย",["รองพื้น: 16-20-0 หรือ 15-15-15 อัตรา 50 กก./ไร่","แต่งหน้า: 46-0-0 อัตรา 25 กก./ไร่ ตอนอายุ 25–30 วัน"]],
+["ดูแล",["ช่วงออกไหม (อายุราว 50–60 วัน) ห้ามขาดน้ำ","หนอนกระทู้ข้าวโพดลายจุด: สำรวจยอดตั้งแต่งอก กำจัดเร็ว"]],
+["ผลผลิตและความคุ้ม",["เก็บเกี่ยว 110–120 วัน ผลผลิตราว 800–1,000 กก./ไร่","ลดความชื้นก่อนขาย · ห้ามเผาตอซัง (ผิดเงื่อนไขผู้รับซื้อ)"]]]},
+veg:{n:"🥬 พืชผัก",m:[10,11,12,1],s:[
+["ฤดูปลูก",["ผักใบ (คะน้า กวางตุ้ง ผักกาด) ปลูกดีหน้าหนาว ต.ค.–ก.พ.","หน้าฝนผักราคาแพง ถ้ามีโรงเรือนหลังคาพลาสติก จะได้กำไรสูง"]],
+["ดิน/ปุ๋ย",["ปุ๋ยคอก 1–2 ตัน/ไร่ ยกแปลงกว้าง 1 ม.","เสริม 15-15-15 อัตรา 20–30 กก./ไร่ แบ่งใส่ทุก 10–15 วัน"]],
+["น้ำ/ดูแล",["ใช้น้ำหยดหรือมินิสปริงเกลอร์ ประหยัดน้ำและแรงงาน","ปลูกหมุนเวียนสลับพืชต่างชนิด ลดโรค · ใช้กับดักกาวเหลืองและสารชีวภัณฑ์"]],
+["ความคุ้ม",["ปลูกสลับรุ่นทุก 1–2 สัปดาห์ ให้มีผักขายต่อเนื่อง","ขายตรงตลาดชุมชนหรือร้านอาหาร ได้ราคาดีกว่าผ่านพ่อค้าคนกลาง"]]]}};
+const GEN=["ตรวจดินฟรีที่สถานีพัฒนาที่ดินมุกดาหาร แล้วใส่ปุ๋ยตามผล ประหยัดค่าปุ๋ยได้มากที่สุด","ขึ้นทะเบียนเกษตรกรกับเกษตรอำเภอ เพื่อรับสิทธิ์ช่วยเหลือเมื่อเกิดภัย","ทำประกันภัยพืชผล (ข้าว ข้าวโพด มันสำปะหลัง) ผ่าน ธ.ก.ส. คุ้มครองแล้งและน้ำท่วม","รวมกลุ่มซื้อปุ๋ย เมล็ดพันธุ์ และรวมกันขาย ต่อรองราคาได้","จดต้นทุนและรายได้ทุกแปลง จะรู้ว่าพืชไหนกำไรจริง"];
+const MN=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."],nowM=new Date().getMonth()+1;
+Object.entries(G).forEach(([k,v])=>{const b=document.createElement("button");b.type="button";b.dataset.k=k;b.textContent=v.n+(v.m.includes(nowM)?" · ช่วงปลูก":"");b.onclick=()=>showGuide(k,true);$("gtabs").append(b)});
+function showGuide(k,stay){const v=G[k];[...$("gtabs").children].forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+ const inS=v.m.includes(nowM);
+ $("gbody").innerHTML=`<div class="g"><div class="tip ${inS?"":"w"}">${inS?`✅ เดือนนี้ (${MN[nowM-1]}) อยู่ในช่วงปลูก${v.n.slice(2)}`:`ช่วงปลูกที่เหมาะ: ${v.m.map(m=>MN[m-1]).join(", ")}`}</div>
+ ${v.s.map(([h,l])=>`<h4>${h}</h4><ul>${l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")}
+ <h4>ทำให้คุ้มที่สุด (ใช้ได้ทุกพืช)</h4><ul>${GEN.map(x=>`<li>${x}</li>`).join("")}</ul>
+ <p class="mute">อัตราปุ๋ย ผลผลิต และต้นทุนเป็นค่าแนะนำทั่วไปโดยประมาณ ควรปรึกษาเกษตรอำเภอ กรมการข้าว หรือ กยท. ในพื้นที่ประกอบ</p></div>`;
+ if(!stay)$("guide").scrollIntoView({behavior:"smooth"})}
+showGuide(Object.keys(G).find(k=>G[k].m.includes(nowM))||"rice",true);
+
+/* ---------- คำนวณปุ๋ยทั้งสวน + คุ้มทุน ---------- */
+const PRICE={"20-8-20":950,"30-5-18":1000,"16-16-8":900,"16-20-0":900,"15-7-18":900,"15-15-15":1000,"46-0-0":850};
+const FX={"20-8-20":"ปุ๋ยยางเล็ก: ช่วยให้ต้นโตเร็ว ใบเขียว ลำต้นแข็งแรง พร้อมกรีดเร็วขึ้น",
+"30-5-18":"ปุ๋ยยางที่กรีดแล้ว: ช่วยให้มีน้ำยางมาก เปลือกงอกใหม่ไว ต้นไม่โทรม",
+"16-16-8":"ปุ๋ยข้าวดินทราย: ช่วยให้ข้าวแตกกอดี รากแข็งแรง ใบเขียว",
+"16-20-0":"ปุ๋ยรองพื้น: ช่วยเรื่องราก ให้ต้นตั้งตัวไว (ข้าวโพด/ข้าวในดินเหนียว)",
+"15-7-18":"ปุ๋ยมัน: ช่วยให้หัวใหญ่ หนัก มีแป้งมาก",
+"15-15-15":"ปุ๋ยสูตรเสมอ: บำรุงทุกส่วนเท่า ๆ กัน ใช้ได้หลายพืช",
+"46-0-0":"ปุ๋ยยูเรีย: เร่งใบเขียว เร่งโต ใส่น้อย ๆ ตามกำหนด ใส่มากเกินแมลงลง ต้นล้ม",
+"ปุ๋ยคอก/ปุ๋ยหมัก":"มูลวัว มูลไก่ ปุ๋ยหมัก: ทำให้ดินร่วนซุย อุ้มน้ำ ปุ๋ยเคมีได้ผลดีขึ้น"};
+const RB=[["ปีที่ 1 (เพิ่งปลูก)","20-8-20",100,"ใส่ครั้งแรกหลังปลูก 1–2 เดือน ห่างโคนประมาณหนึ่งคืบ"],
+["ปีที่ 2","20-8-20",150,"หว่านรอบโคน กว้างเท่าที่ใบแผ่ไปถึง"],["ปีที่ 3","20-8-20",200,"ร่มยางเริ่มบัง พืชแซมจะโตช้าลง"],
+["ปีที่ 4","20-8-20",250,"หว่านเป็นแถบระหว่างแถวยาง"],["ปีที่ 5","20-8-20",300,""],["ปีที่ 6","20-8-20",350,"วัดรอบต้นสูงจากดิน 150 ซม. ถ้ารอบต้นถึง 50 ซม. เตรียมกรีดได้"],
+["ปีที่ 7 ขึ้นไป (กรีดแล้ว)","30-5-18",500,"ใส่ช่วงหยุดกรีดตอนใบร่วง/ต้นฝน และปลายฝน"]];
+const FC={rice:[["16-16-8",27.5,"หลังปักดำ 15–20 วัน (นาหว่าน 20–25 วัน)"],["46-0-0",7.5,"ตอนข้าวตั้งท้อง"]],
+cassava:[["15-7-18",50,"ตอนมันอายุ 1–3 เดือน โรยข้างแถวแล้วกลบ"],["ปุ๋ยคอก/ปุ๋ยหมัก",1000,"ตอนไถเตรียมดิน"]],
+cane:[["15-15-15",50,"ตอนปลูก โรยในร่อง"],["46-0-0",22.5,"ตอนอ้อยอายุ 3–4 เดือน"]],
+corn:[["16-20-0",50,"ตอนปลูก"],["46-0-0",25,"ตอนข้าวโพดอายุ 25–30 วัน"]]};
+// ค่าเริ่มต้นสำหรับคิดกำไร: ราคาขาย บาท/กก., ผลผลิต กก./ไร่/รอบ, ต้นทุนอื่น บาท/ไร่, ชื่อผลผลิต
+const PF={rubber:[60,250,500,"ยางแผ่นดิบ"],rice:[12,450,3500,"ข้าวเปลือก"],cassava:[2.5,4000,4500,"หัวมันสด"],cane:[1.1,13000,6000,"อ้อย"],corn:[8,900,4000,"ข้าวโพดเมล็ด"]};
+const MK={rubber:["การยางแห่งประเทศไทย (กยท.) ราคายางวันนี้","https://www.raot.co.th/"],rice:["ราคาข้าว สมาคมโรงสีข้าวไทย","https://www.thairicemillers.com/"],
+cassava:["ราคามันสำปะหลัง สมาคมการค้ามันสำปะหลังไทย","https://www.thaitapiocastarch.org/"],cane:["ราคาอ้อย สำนักงานคณะกรรมการอ้อยและน้ำตาลทราย","https://www.ocsb.go.th/"],corn:["ราคาสินค้าเกษตร กรมการค้าภายใน","https://www.dit.go.th/"]};
+let FS=false,SHARE=0,RPROD="sheet",TYR=3,RPedited=false;
+// ผลผลิตเนื้อยางแห้งเฉลี่ย (กก./ไร่/ปี) เมื่อใส่ปุ๋ยครบ ดูแลดี ภาคอีสาน แยกตามปีที่กรีด
+const TAPY=[["ปีแรกที่กรีด",150],["ปีที่ 2",200],["ปีที่ 3",240],["ปีที่ 4–15 (ช่วงให้น้ำยางสูงสุด)",281],["ปีที่ 16–20",250],["ปีที่ 21 ขึ้นไป (ต้นแก่)",200]];
+const VAR={rrim:["RRIM 600",1],rrit:["RRIT 251",333.4/281.2]};let VR="rrim";
+const DAYS=120,MONTHS=9,DRC_CUP=.55,DRC_LATEX=.33;
+function rubberYield(n,rai){const dry=Math.round(TAPY[TYR][1]*VAR[VR][1]),tr=rai?n/rai:76,perTree=dry/(tr||76),all=perTree*n;
+ const row=(nm,f,u)=>`<tr><td><b>${nm}</b></td><td class="tn">${f1(dry/f)}</td><td class="tn">${f1(all/f)}${all/f>=1000?`<br><span class="mute">${f1(all/f/1000)} ตัน</span>`:""}</td><td class="tn">${f1(all/f/MONTHS)}</td><td class="tn">${f1(perTree/f)}</td><td class="tn">${f1(all/f/DAYS)}</td></tr>`;
+ return `<h3 style="margin:14px 0 4px">ผลผลิตที่ควรได้ ถ้าใส่ปุ๋ยครบ ดูแลดี</h3>
+ <div class="tools" style="margin-bottom:6px">พันธุ์: ${Object.entries(VAR).map(([k2,v])=>`<button type="button" class="vrb tyb${k2===VR?" on":""}" data-v="${k2}">${v[0]}</button>`).join("")}</div>
+ <div class="tools" style="margin-bottom:6px">${TAPY.map((t,i)=>`<button type="button" class="tyb${i===TYR?" on":""}" data-y="${i}">${t[0]}</button>`).join("")}</div>
+ <div style="overflow-x:auto"><table class="yt"><thead><tr><th>ขายแบบ</th><th>ไร่ละ/ปี</th><th>ทั้งสวน/ปี</th><th>ทั้งสวน/เดือน</th><th>ต้นละ/ปี</th><th>ทั้งสวน/วันกรีด</th></tr></thead><tbody>
+ ${row("ยางแผ่นดิบ",1)}${row("ยางก้นถ้วย",DRC_CUP)}${row("น้ำยางสด (น้ำหนักน้ำยาง)",DRC_LATEX)}</tbody></table></div>
+ <div class="mute">หน่วยเป็นกิโลกรัม · คิดจากกรีดปีละประมาณ ${DAYS} วัน (วันเว้นวัน หักวันฝนตกและช่วงใบร่วง) กรีดได้ราว ${MONTHS} เดือน/ปี · ยางก้นถ้วยมีเนื้อยางราว 55% น้ำยางสดราว 33% (ที่เหลือคือน้ำ) จึงหนักกว่ายางแผ่น<br>
+ <details style="margin-top:6px"><summary><b>ตัวเลขนี้มาจากไหน?</b></summary><ul style="color:var(--fg)">
+ <li><b>งานวิจัยกรมวิชาการเกษตร (2563)</b> สำรวจสวนยางเกษตรกร 13 จังหวัดภาคอีสาน: พันธุ์ RRIM 600 ได้เฉลี่ย <b>281 กก./ไร่/ปี</b> พันธุ์ RRIT 251 ได้ <b>333 กก.</b></li>
+ <li>งานเดียวกัน (อีสาน พันธุ์ RRIM 600): ใส่ปุ๋ยเคมี+ปุ๋ยคอก <b>280 กก.</b> · ใส่ปุ๋ยเคมีอย่างเดียว <b>273 กก.</b> · <b>ไม่ใส่ปุ๋ยเลย 247 กก.</b></li>
+ <li>พื้นที่เหมาะสมดี ดูแลถูกวิธี ควรได้ <b>300–400 กก./ไร่/ปี</b> (เกษตรกรส่วนใหญ่ยังได้ต่ำกว่านี้)</li>
+ <li>เทียบของจริง: <b>มุกดาหารเฉลี่ยทั้งจังหวัด 219 กก./ไร่/ปี</b> (สำนักงานเกษตรจังหวัดมุกดาหาร ม.ค. 2568) · ภาคอีสานเฉลี่ย 218 กก. (สศก. 2560)</li>
+ <li>ตัวเลขแยกตามปีที่กรีด (ปีแรก ปีที่ 2 …) ยังเป็นค่าประมาณ เพราะงานวิจัยไม่ได้แยกให้</li></ul></details>
+ ถ้าได้น้อยกว่านี้มาก ให้ตรวจ: ใส่ปุ๋ยครบไหม · หน้ากรีดเป็นโรคไหม · กรีดถี่เกินไหม · มีหญ้าแย่งปุ๋ยไหม</div>`}
+const RP={sheet:["ยางแผ่นดิบ",60,250,"รีดเป็นแผ่นแล้วตากแห้ง ราคาดี แต่ใช้แรงงานและเวลา"],latex:["น้ำยางสด",58,250,"ขายทันทีหลังกรีด ราคาคิดจากเนื้อยางแห้ง (% DRC) ผลผลิตให้ใส่เป็นกิโลเนื้อยางแห้ง"],cup:["ยางก้นถ้วย",25,450,"ปล่อยให้น้ำยางแข็งในถ้วย เก็บง่าย ไม่ต้องรีด มีน้ำปน น้ำหนักมากกว่า แต่ราคาต่อกิโลถูกกว่า"]};const PV={};Object.keys(PF).forEach(k=>PV[k]=[...PF[k]]);
+const cc=$("cc"),cage=$("cage"),crai=$("crai"),ctree=$("ctree");
+RB.forEach((r,i)=>cage.add(new Option(r[0],i)));cage.value=6;
+let treeTouched=false;ctree.oninput=()=>{treeTouched=true;calc()};
+[cc,cage].forEach(e=>e.onchange=calc);crai.oninput=()=>{treeTouched=false;calc()};
+const f1=n=>n.toLocaleString("th-TH",{maximumFractionDigits:1}),bag=kg=>Math.ceil(kg/50),bt=n=>Math.round(n).toLocaleString("th-TH")+" บาท";
+const inp=(id,v,step)=>`<input id="${id}" type="number" min="0" step="${step||"any"}" value="${v}" class="ni">`;
+
+const BASE={rubber:.88,rice:.6,cassava:.55,cane:.6,corn:.45};let BUDGET=null;
+const yf=(k,f)=>{const b=BASE[k],c=1-Math.exp(-1);return f<=1?b+(1-b)*(1-Math.exp(-f))/c:1+(1-b)*.08*Math.min(f-1,.6)};
+
+// ผลระยะยาว: ดินและต้นพืชที่ขาดปุ๋ยต่อเนื่อง ผลผลิตลดลงสะสมทุกปี (ค่าประมาณ ปีแรกใช้ตัวเลขงานวิจัย)
+const DECL={none:.93,half:.98};
+const PROB={rubber:[["ปีแรก","ผลผลิตลดลงเล็กน้อย เพราะต้นยังมีธาตุอาหารที่สะสมจากปุ๋ยปีก่อน ๆ (งานวิจัยอีสาน: ไม่ใส่ 247 · ใส่ 273–280 กก./ไร่)"],
+ ["ปีที่ 2–3","ใบเหลืองซีด ร่วงเร็ว · <b>เปลือกที่กรีดงอกช้าและบาง</b> หน้ากรีดเสียเร็ว · ต้นที่ <b>กรีดแล้วไม่มีน้ำยาง (เปลือกแห้ง)</b> เพิ่มขึ้น · ต้านทานโรคเส้นดำและราได้น้อยลง"],
+ ["ระยะยาว","กลับมาใส่ปุ๋ยใหม่ ต้องใช้เวลา 1–2 ปีกว่าผลผลิตจะฟื้น · หน้ากรีดหมดเร็ว <b>อายุกรีดของสวนสั้นลง</b> ต้องโค่นปลูกใหม่เร็วขึ้น"]],
+ rice:[["ปีแรก","ต้นเตี้ย แตกกอน้อย รวงสั้น เมล็ดลีบมาก"],["ปีที่ 2–3","ดินจืดลงทุกปี ผลผลิตลดต่อเนื่อง · หญ้าขึ้นแข่งข้าวง่าย"],["ระยะยาว","ต้องใช้ปุ๋ยมากกว่าเดิมเพื่อฟื้นดิน"]],
+ cassava:[["ปีแรก","หัวเล็ก เปอร์เซ็นต์แป้งต่ำ ขายได้ราคาน้อย"],["ปีที่ 2–3","ดินทรายเสื่อมเร็วมาก เพราะมันดึงธาตุอาหาร (โพแทสเซียม) ออกจากดินไปกับหัว"],["ระยะยาว","ดินแน่น แห้ง ปลูกอะไรก็ได้ผลน้อย"]],
+ cane:[["ปีแรก","ลำเล็ก น้ำหนักน้อย ค่าความหวานต่ำ"],["ปีที่ 2–3","<b>ตออ้อยแตกน้อย</b> ไว้ตอต่อไม่ได้ ต้องรื้อปลูกใหม่เร็วขึ้น (ค่าใช้จ่ายสูง)"],["ระยะยาว","ดินเสื่อม ผลผลิตต่อไร่ต่ำลงเรื่อย ๆ"]],
+ corn:[["ปีแรก","ใบเหลืองจากใบล่าง ฝักเล็ก เมล็ดไม่เต็มฝัก"],["ปีที่ 2–3","ดินจืดลง ผลผลิตลดต่อเนื่อง"],["ระยะยาว","ต้องใช้ปุ๋ยมากกว่าเดิมเพื่อฟื้นดิน"]]};
+function multiYear(k,fert,other,price,yld,rai,keep){
+ const Y=5,run=(f,d)=>{let tot=0,y5=0,rows=[];for(let t=0;t<Y;t++){const yy=yld*yf(k,f)/yf(k,1)*(d?Math.pow(d,t):1);const pr=yy*rai*price*keep-fert*f-other*rai;tot+=pr;rows.push(pr);y5=yy}return{tot,y5,rows}};
+ const S=[["ใส่ครบทุกปี",run(1,0)],["ใส่ครึ่งเดียวทุกปี",run(.5,DECL.half)],["ไม่ใส่เลย",run(0,DECL.none)]],mx=Math.max(...S.map(x=>x[1].tot),1);
+ const lossNone=S[0][1].tot-S[2][1].tot;const bi=S.reduce((b,x,i)=>x[1].tot>S[b][1].tot?i:b,0);
+ return `<h3 style="margin:16px 0 4px">ถ้าปีนี้ไม่ใส่ ปีต่อ ๆ ไปจะเป็นอย่างไร</h3>
+ <div class="tips">${PROB[k].map(([h,t])=>`<div class="tip w"><b>${h}:</b> ${t}</div>`).join("")}</div>
+ <div class="mute" style="margin-top:10px">เทียบกำไรรวม 5 ปี (ทั้งสวน ${f1(rai)} ไร่ ราคาเท่าเดิมทุกปี)</div>
+ <div class="lv">${S.map(([n,r],i)=>`<div class="lr${i===bi?" best":""}"><div class="ll"><b>${n}</b>${i===bi?"<em style=\"font-style:normal;color:var(--acc);font-weight:700\"> คุ้มที่สุดใน 5 ปี</em>":""}<span class="mute">ปีที่ 5 ได้ไร่ละ ${f1(r.y5)} กิโล</span></div>
+ <div class="lb"><div class="bar2"><i style="width:${Math.max(0,r.tot)/mx*100}%;${i===2?"background:var(--bad)":i===1?"background:var(--warn)":""}"></i></div><span class="mute">กำไรรายปี: ${r.rows.map(v=>Math.round(v/1000)+"k").join(" → ")}</span></div>
+ <div class="lp ${r.tot>=0?"ok":"no"}">รวม 5 ปี<b class="tn">${bt(r.tot)}</b></div></div>`).join("")}</div>
+ <div class="tip ${lossNone>0?"b":""}" style="margin-top:8px">${lossNone>0?`📉 ไม่ใส่ปุ๋ยเลย 5 ปี <b>ได้เงินน้อยกว่าใส่ครบ ${bt(lossNone)}</b> แม้ปีแรกอาจดูเหมือนประหยัดได้`:`ที่ราคานี้ ใส่ปุ๋ยแทบไม่คุ้มแม้คิด 5 ปี ลองตรวจดินก่อน แล้วใส่เฉพาะธาตุที่ดินขาด`}</div>
+ <p class="mute">ปีแรกใช้ตัวเลขจากงานวิจัย ปีต่อ ๆ ไปเป็นค่าประมาณ: ไม่ใส่เลย ผลผลิตลดลงสะสมราว ${Math.round((1-DECL.none)*100)}% ต่อปี · ใส่ครึ่งเดียว ลดราว ${Math.round((1-DECL.half)*100)}% ต่อปี (ดินทรายอีสานธาตุอาหารหมดเร็ว) ของจริงขึ้นกับดินและการดูแล</p>`}
+function invest(k,rb,tapping,fert,other,price,yld,rai){
+ if(rb&&!tapping)return `<h3 style="margin:16px 0 6px">ใส่ปุ๋ยน้อย ส่งผลอย่างไร</h3><div class="tip w">ยางเล็กที่ได้ปุ๋ยไม่พอ จะโตช้า ต้นเล็ก <b>เปิดกรีดได้ช้าลง 1–2 ปี</b> เท่ากับเสียรายได้ไป 1–2 ปีเต็ม และต้นที่โตช้าจะให้น้ำยางน้อยไปตลอดอายุ ช่วงยางเล็กจึงเป็นช่วงที่ควรใส่ปุ๋ยให้ครบที่สุด</div>`;
+ if(!fert||!rai||!price||!yld)return "";
+ const keep=1-(rb?SHARE/100:0),L=[0,.25,.5,.75,1,1.25].map(f=>{const y=yld*yf(k,f)/yf(k,1),inc=y*rai*price*keep,c=fert*f+other*rai;return{f,y,inc,c,pr:inc-c}});
+ const best=L.filter(l=>l.f<=1).reduce((a,b)=>b.pr>a.pr?b:a),mx=Math.max(...L.map(l=>l.inc)),z=L[0],full=L[4];
+ const roi=(full.inc-z.inc)/fert;
+ let bud="";if(BUDGET!=null){const f=Math.min(1.25,BUDGET/fert),y=yld*yf(k,f)/yf(k,1),inc=y*rai*price*keep,pr=inc-BUDGET-other*rai,lost=full.pr-pr;
+  bud=`<div class="tip ${f>=1?"":"w"}" style="margin-top:8px">💵 ถ้ามีเงินซื้อปุ๋ย <b>${bt(BUDGET)}</b> ใส่ได้ <b>${Math.round(f*100)}%</b> ของที่แนะนำ<br>
+  → ผลผลิตควรได้ประมาณ <b>ไร่ละ ${f1(y)} กิโล</b> · ขายได้ ${bt(inc)} · ${pr>=0?"กำไร":"ขาดทุน"} <b>${bt(Math.abs(pr))}</b>
+  ${f<1&&lost>0?`<br>⚠️ น้อยกว่าใส่ครบ <b>${bt(lost)}</b> ทั้งที่ประหยัดค่าปุ๋ยไปแค่ ${bt(fert-BUDGET)} · ถ้ากู้หรือรวมกลุ่มซื้อปุ๋ยให้ครบได้ จะคุ้มกว่า`:""}</div>`}
+ return `<h3 style="margin:16px 0 4px">ใส่ปุ๋ยมาก-น้อย ผลต่างกันแค่ไหน</h3>
+ <div class="mute">เทียบให้ดูว่าถ้าประหยัดค่าปุ๋ย ผลผลิตและเงินที่ได้จะลดลงเท่าไร (ทั้งสวน ${f1(rai)} ไร่)</div>
+ <div class="tip" style="margin-top:8px">📈 <b>ค่าปุ๋ยทุก 1 บาท ได้เงินคืนประมาณ ${f1(roi)} บาท</b> (เทียบใส่ครบกับไม่ใส่เลย)${roi>1?" · ใส่ปุ๋ยให้ครบคุ้มกว่าประหยัด":" · ราคาขายตอนนี้ต่ำ ใส่ปุ๋ยแล้วได้คืนไม่ถึงทุน ลองทบทวนราคาหรือตรวจดินก่อน"}</div>
+ <div class="lv">${L.map(l=>`<div class="lr${l===best?" best":""}">
+  <div class="ll"><b>${l.f===0?"ไม่ใส่ปุ๋ย":l.f===1?"ใส่ครบ (100%)":`ใส่ ${l.f*100}%`}</b><span class="mute">ค่าปุ๋ย ${bt(fert*l.f)}</span></div>
+  <div class="lb"><div class="bar2"><i style="width:${mx?l.inc/mx*100:0}%"></i></div><span class="mute">ผลผลิตไร่ละ <b class="tn">${f1(l.y)}</b> กิโล · ขายได้ ${bt(l.inc)}</span></div>
+  <div class="lp ${l.pr>=0?"ok":"no"}">${l.pr>=0?"กำไร":"ขาดทุน"}<b class="tn">${bt(Math.abs(l.pr))}</b>${l===best?"<em>คุ้มที่สุด</em>":""}</div></div>`).join("")}</div>
+ <div class="fg" style="margin-top:8px"><div>ฉันมีเงินซื้อปุ๋ย (บาท)${inp("pb",BUDGET??"",500)}<span class="mute">ใส่ตัวเลขแล้วกดที่อื่น ระบบจะบอกผลที่ควรได้</span></div></div>${bud}
+ ${multiYear(k,fert,other,price,yld,rai,keep)}
+ <div class="tip w" style="margin-top:8px">⚠️ <b>ตารางใส่ปุ๋ยมาก-น้อยด้านบนคิดแค่ปีเดียว</b> ดูผล 5 ปีจากตารางนี้แทน ถ้างดหรือลดปุ๋ยหลายปีติดกัน ต้นจะโทรม ${rb?"เปลือกงอกช้า หน้ากรีดเสีย ":""}ผลผลิตจะลดลงเรื่อย ๆ มากกว่าตัวเลขในตาราง · ช่วงราคาตกลดปุ๋ยได้ชั่วคราว <b>แต่อย่างดเลย</b> · ประหยัดที่สุดคือ<b>ตรวจดินฟรี</b>ที่สถานีพัฒนาที่ดิน แล้วใส่ตามที่ดินขาด และใส่ปุ๋ยคอกเสริม</div>
+ <p class="mute">ข้อมูลจริงมีแค่ "ไม่ใส่ปุ๋ย" กับ "ใส่ปุ๋ย"${k==="rubber"?" (ยางอีสาน: ไม่ใส่ 247 · ใส่ 273–280 กก./ไร่/ปี กรมวิชาการเกษตร 2563)":""} · ระดับ 25–75% เป็นค่าประมาณระหว่างสองจุดนั้น · ดินทรายอีสานธาตุอาหารน้อย ถ้าไม่ใส่ปุ๋ยเลยจะได้ผลผลิตราว ${Math.round(BASE[k]*100)}% ของตอนใส่ครบ ใส่เพิ่มช่วงแรกได้ผลเพิ่มมาก ยิ่งใส่ใกล้ครบยิ่งเพิ่มน้อยลง และใส่เกินที่แนะนำแทบไม่ได้อะไรเพิ่ม เสียเงินเปล่า ของจริงขึ้นกับดิน น้ำ และการดูแลด้วย</p>`}
+function calc(){
+ const k=cc.value,rb=k==="rubber",rai=Math.max(0,+crai.value||0);$("cageL").hidden=!rb;$("ctreeL").hidden=!rb;
+ let rows=[],extra="",tapping=true;
+ if(rb){if(!treeTouched)ctree.value=Math.round(rai*76);const n=Math.max(0,+ctree.value||0),[lab,f,g,note]=RB[cage.value];tapping=+cage.value===6;
+  rows.push([f,`ต้นละ ${g} กรัม (${f1(g/1000)} กิโล)`,"ปีละ 2 ครั้ง: ต้นฝน (พ.ค.–มิ.ย.) กับ ปลายฝน (ก.ย.–ต.ค.)",n*g*2/1000]);
+  rows.push(["ปุ๋ยคอก/ปุ๋ยหมัก","ต้นละ 2–3 กิโล","ปีละครั้ง ตอนต้นฝน",n*2.5]);
+  extra=`<div class="tip">🌳 ยาง${lab} · ${n.toLocaleString()} ต้น${rai?` (ไร่ละ ${f1(n/rai)} ต้น)`:""} · ปุ๋ยเคมีรวม <b>ต้นละ ${f1(g*2/1000)} กิโลต่อปี</b>${note?`<br>${note}`:""}</div>`+(+cage.value===6?rubberYield(n,rai):"");
+  if(+cage.value===6&&!RPedited){const dry=Math.round(TAPY[TYR][1]*VAR[VR][1]);RP.sheet[2]=dry;RP.latex[2]=dry;RP.cup[2]=Math.round(dry/DRC_CUP)}}
+ else FC[k].forEach(([f,r,when])=>rows.push([f,`ไร่ละ ${f1(r)} กิโล`,when,rai*r]));
+ let fert=0;
+ const cards=rows.map(([f,rate,when,kg],i)=>{const p=PRICE[f],c=p!=null?bag(kg)*p:0;fert+=c;
+  return `<div class="fz"><div><b class="fn">${f}</b> <span class="mute">${FX[f]||""}</span></div>
+  <div class="fg"><div>ใส่เท่าไร<b>${rate}</b></div><div>ใส่ตอนไหน<b>${when}</b></div>
+  <div>ทั้งสวนต้องใช้${rb?" (ต่อปี)":""}<b>${f1(kg)} กิโล${kg>=1000?` = ${f1(kg/1000)} ตัน`:""}</b><span class="mute">${bag(kg)} กระสอบ (กระสอบละ 50 กิโล)</span></div>
+  ${p!=null?`<div>ราคากระสอบละ (แก้ได้)${inp("fp"+i,p,10)}<span class="mute">รวม ${bt(c)}</span></div>`:""}</div></div>`}).join("");
+ let [price,yld,other,pname]=PV[k];if(rb){price=RP[RPROD][1];yld=RP[RPROD][2];pname=RP[RPROD][0]}
+ const incomeYld=rb&&!tapping?0:yld;
+ const fo=fert*(rb&&FS?1-SHARE/100:1),income=price*incomeYld*rai,tap=rb?income*SHARE/100:0,cost=fo+other*rai+tap,profit=income-cost;
+ const keep=1-(rb?SHARE/100:0),fix=fo+other*rai,bePrice=incomeYld*rai&&keep>0?fix/(incomeYld*rai*keep):0,beYld=price*rai&&keep>0?fix/(price*rai*keep):0;
+ $("cout").innerHTML=extra+`<h3 style="margin:12px 0 6px">ปุ๋ยที่ต้องใช้</h3>${cards}
+ <div class="tip">💰 ค่าปุ๋ยทั้งหมดประมาณ <b>${bt(fert)}</b>${rai?` (ไร่ละ ${bt(fert/rai)})`:""}</div>
+ <details class="mute" style="margin-top:6px"><summary>ตัวเลข 3 ตัวบนกระสอบปุ๋ย แปลว่าอะไร?</summary>
+ <ul style="color:var(--fg)"><li><b>ตัวแรก (ไนโตรเจน)</b> = เร่งใบเขียว เร่งโต</li><li><b>ตัวกลาง (ฟอสฟอรัส)</b> = เร่งราก เร่งดอก</li><li><b>ตัวท้าย (โพแทสเซียม)</b> = เพิ่มน้ำหนัก หัวใหญ่ เมล็ดเต็ม น้ำยางดี</li>
+ <li>ตัวเลขยิ่งมาก ยิ่งมีธาตุนั้นมาก เช่น 46-0-0 มีแต่ตัวเร่งใบ</li></ul></details>
+ <h3 style="margin:16px 0 6px">คิดกำไร-ขาดทุน · จุดคุ้มทุน</h3>
+ <div class="mute">ตัวเลขในช่องเป็นตัวอย่าง ให้แก้เป็นราคาที่ขายได้จริงวันนี้ · ดูราคากลางได้ที่ <a href="${MK[k][1]}" target="_blank" rel="noopener">${MK[k][0]}</a></div>
+ <div class="fg" style="margin-top:8px">
+ ${rb?`<div style="grid-column:1/-1">ขายยางแบบไหน<div class="tools" style="margin-top:4px">${Object.entries(RP).map(([key,v])=>`<button type="button" class="rpb${key===RPROD?" on":""}" data-r="${key}">${v[0]}</button>`).join("")}</div><span class="mute">${RP[RPROD][3]}</span></div>`:""}<div>ขาย${pname} กิโลละ (บาท)${inp("pp",price,0.1)}</div>
+ <div>ได้ผลผลิตไร่ละ (กิโล${rb?"/ปี":"/รอบ"})${inp("py",yld,10)}</div>
+ <div>ค่าใช้จ่ายอื่นไร่ละ (บาท)${inp("po",other,100)}<span class="mute">${rb?"ยาทาหน้ายาง ถ้วย กรด ลวด มีด":"ค่าไถ ค่าพันธุ์ ค่าจ้าง ค่ายา ค่าเกี่ยว"}</span></div>${rb?`<div>แบ่งเงินให้คนกรีด (%)${inp("ps",SHARE,5)}<span class="mute">กรีดเอง = 0 · จ้างแบ่งครึ่ง = 50</span></div><label class="chk"><input type="checkbox" id="pfs" ${FS?"checked":""}> คนกรีดช่วยออกค่าปุ๋ยตามสัดส่วนที่แบ่งยาง<span class="mute">เช่น แบ่งยาง 40% ก็ออกค่าปุ๋ย 40%</span></label>`:""}</div>
+ ${rb&&!tapping?`<div class="tip w" style="margin-top:8px">ยางยังไม่ถึงอายุกรีด จึงยังไม่มีรายได้จากน้ำยาง ปีนี้มีแต่รายจ่าย <b>${bt(cost)}</b> · ลองปลูกพืชแซม เช่น มัน สับปะรด ถั่ว ระหว่างแถวยางเพื่อหารายได้ระหว่างรอ</div>`:`
+ <div class="sum"><div>ขายได้ทั้งหมด<b>${bt(income)}</b></div><div>ค่าใช้จ่ายทั้งหมด<b>${bt(cost)}</b><span class="mute">ค่าปุ๋ย${rb&&FS&&SHARE?"ส่วนของเรา":""} ${bt(fo)} + อื่น ๆ ${bt(other*rai)}${tap?` + ส่วนคนกรีด ${bt(tap)}`:""}</span></div>
+ <div class="${profit>=0?"ok":"no"}">${profit>=0?"กำไร":"ขาดทุน"}<b>${bt(Math.abs(profit))}</b>${rai?`<span class="mute">ไร่ละ ${bt(profit/rai)}</span>`:""}</div></div>
+ <div class="tip ${profit>=0?"":"b"}" style="margin-top:8px">⚖️ <b>จุดคุ้มทุน</b> (ขายแล้วไม่ขาดทุน ไม่กำไร):<br>
+ • ต้องขายได้อย่างน้อย <b>กิโลละ ${f1(bePrice)} บาท</b> (ถ้าได้ผลผลิตไร่ละ ${f1(yld)} กิโล)<br>
+ • หรือต้องได้ผลผลิตอย่างน้อย <b>ไร่ละ ${f1(beYld)} กิโล</b> (ถ้าขายได้กิโลละ ${f1(price)} บาท)</div>`}
+ ${invest(k,rb,tapping,fo,other,price,yld,rai)}
+ <p class="mute">อัตราปุ๋ยเป็นค่าแนะนำทั่วไปสำหรับดินอีสาน ถ้าตรวจดินแล้วให้ใส่ตามผลตรวจ · ใส่ปุ๋ยตอนดินชื้น · ใส่ปูนแล้วรอ 2 สัปดาห์ค่อยใส่ปุ๋ยเคมี</p>`;
+ rows.forEach(([f],i)=>{const e=$("fp"+i);if(e)e.onchange=()=>{PRICE[f]=+e.value||0;calc()}});
+ {const e=$("pb");if(e)e.onchange=()=>{BUDGET=e.value===""?null:Math.max(0,+e.value);calc()}}
+ {const e=$("pfs");if(e)e.onchange=()=>{FS=e.checked;calc()}}
+ {const e=$("ps");if(e)e.onchange=()=>{SHARE=Math.min(100,+e.value||0);calc()}}
+ document.querySelectorAll(".tyb[data-y]").forEach(b=>b.onclick=()=>{TYR=+b.dataset.y;calc()});document.querySelectorAll(".vrb").forEach(b=>b.onclick=()=>{VR=b.dataset.v;calc()});
+ document.querySelectorAll(".rpb").forEach(b=>b.onclick=()=>{RPROD=b.dataset.r;calc()});
+ [["pp",0],["py",1],["po",2]].forEach(([id,j])=>{const e=$(id);if(e)e.onchange=()=>{if(rb&&j<2){RP[RPROD][j+1]=+e.value||0;if(j===1)RPedited=true}else PV[k][j]=+e.value||0;calc()}});
+}
+calc();
+
+/* ---------- สวนยาง: กรีดได้ไหม / งานรายเดือน / รอบต้น ---------- */
+const TH_D=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสฯ","ศุกร์","เสาร์"];
+function tapNight(H,dateStr){ // ช่วงกรีด ตี 1 – 7 โมงเช้า ของวันนั้น
+ const idx=t=>H.time.indexOf(dateStr+"T"+String(t).padStart(2,"0")+":00");
+ const rng=(a,b)=>{const out=[];for(let h=a;h<=b;h++){const i=idx(h);if(i>=0)out.push(i)}return out};
+ const prev=new Date(dateStr+"T00:00");prev.setDate(prev.getDate()-1);const pd=prev.getFullYear()+"-"+String(prev.getMonth()+1).padStart(2,"0")+"-"+String(prev.getDate()).padStart(2,"0");
+ const before=[20,21,22,23].map(h=>H.time.indexOf(pd+"T"+h+":00")).filter(i=>i>=0).concat(rng(0,0));
+ const win=rng(1,7),after=rng(8,10);if(!win.length)return null;
+ const mm=a=>a.reduce((s,i)=>s+(H.precipitation[i]||0),0),pp=a=>Math.max(0,...a.map(i=>H.precipitation_probability[i]||0));
+ const rW=mm(win),pW=pp(win),rB=mm(before),rA=mm(after),pA=pp(after),hum=Math.max(...win.map(i=>H.relative_humidity_2m[i]||0));
+ if(rW>=0.3||pW>=60)return{k:"no",ic:"🌧️",t:"งดกรีด",why:rW>=0.3?`คาดว่าฝนจะตกช่วงตี 1 ถึง 7 โมงเช้า (ประมาณ ${f1(rW)} มม.)`:`ช่วงตี 1 ถึง 7 โมงเช้า มีโอกาสฝนตก ${pW}%`};
+ if(rB>=1)return{k:"w",ic:"💧",t:"รอให้หน้ายางแห้งก่อน",why:`ฝนตกช่วงหัวค่ำ (${f1(rB)} มม.) หน้ายางอาจยังเปียก ถ้าเปลือกเปียกให้งดกรีด`};
+ if(pW>=35)return{k:"w",ic:"🌦️",t:"กรีดได้ แต่ระวังฝน",why:`มีโอกาสฝน ${pW}% เตรียมเก็บน้ำยางให้ไว`};
+ if(rA>=0.5||pA>=50)return{k:"w",ic:"⏰",t:"กรีดได้ เก็บน้ำยางให้ไว",why:"ช่วงเช้า 8–10 โมงอาจมีฝน น้ำยางในถ้วยจะเสีย"};
+ return{k:"ok",ic:"✅",t:"กรีดได้",why:"ไม่มีฝนช่วงกรีด"+(hum>=95?" · อากาศชื้นมาก น้ำยางไหลดี":"")};
+}
+function renderTap(d){
+ const H=d.hourly,now=new Date(),m=now.getMonth()+1,days=[];
+ for(let k=0;k<4;k++){const x=new Date(now);x.setDate(x.getDate()+k);days.push(x)}
+ const iso=x=>x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");
+ const first=now.getHours()>=7?1:0; // เลยเวลากรีดแล้ว ดูคืนถัดไป
+ const R=days.map((x,k)=>({x,k,r:tapNight(H,iso(x))})).filter(o=>o.r&&o.k>=first).slice(0,3);
+ if(!R.length){$("tap").innerHTML="";return}
+ const lab=o=>o.k===0?"เช้ามืดวันนี้":o.k===1?(now.getHours()>=17?"คืนนี้ (ตี 1–7 พรุ่งนี้)":"เช้ามืดพรุ่งนี้"):`เช้ามืดวัน${TH_D[o.x.getDay()]}`;
+ const leaf=[2,3].includes(m)?`<div class="tip w" style="margin-top:8px">🍂 เดือนนี้ยางผลัดใบ ควร<b>หยุดกรีด</b>ให้ต้นได้พัก จนกว่าใบใหม่จะเขียวเต็มต้น</div>`:"";
+ const h=R[0];
+ $("tap").innerHTML=`<div class="tapbig ${h.r.k}"><div class="ic">${h.r.ic}</div><div><span class="mute">${lab(h)}</span><b>${h.r.t}</b><span>${h.r.why}</span></div></div>
+ <div class="nights">${R.slice(1).map(o=>`<div><span class="mute">${lab(o)}</span><b>${o.r.ic} ${o.r.t}</b></div>`).join("")}</div>${leaf}`;
+ SAYTXT=`${lab(h)} ${h.r.t} ${h.r.why}. `+R.slice(1).map(o=>`${lab(o)} ${o.r.t}`).join(". ");
+}
+let SAYTXT="";
+const CAL=[["มกราคม",["ยางเริ่มทิ้งใบปลายเดือน ลดวันกรีดลง","ถางหญ้าทำแนวกันไฟรอบสวน กว้าง 2–3 เมตร"]],
+["กุมภาพันธ์",["ยางทิ้งใบ <b>หยุดกรีด</b> ให้ต้นพัก","เก็บใบและหญ้าแห้งออกจากโคนต้น ระวังไฟไหม้สวน","ห้ามเผาในสวนยาง"]],
+["มีนาคม",["ยังหยุดกรีด ใบอ่อนออกใหม่","ระวังโรคราแป้งที่ใบอ่อน (ใบมีผงขาว ใบร่วง)","ยางเล็ก: คลุมโคนด้วยฟาง ถ้ามีน้ำให้รดช่วยต้นรอดหน้าแล้ง"]],
+["เมษายน",["ใบเขียวเต็มต้นแล้ว เริ่มเปิดกรีดได้ปลายเดือน","ซื้อปุ๋ยเตรียมไว้ใส่ต้นฝน","ซ่อมถ้วยรองน้ำยาง ลับมีดกรีด"]],
+["พฤษภาคม",["<b>ใส่ปุ๋ยครั้งที่ 1</b> เมื่อฝนแรกตกดินชื้น (ดูส่วนคิดปุ๋ยข้างล่าง)","ปลูกยางใหม่ หรือปลูกซ่อมต้นที่ตาย","กรีดได้ตามปกติ"]],
+["มิถุนายน",["ปลูกยางใหม่ช่วงนี้ดีที่สุด","ถางหญ้าระหว่างแถว","ใส่ปุ๋ยถ้ายังไม่ได้ใส่"]],
+["กรกฎาคม",["ฝนชุก <b>ทายาหน้ายางกันโรคเส้นดำ</b> (เมทาแลกซิล) ทุก 7 วัน","ติดหมวกหรือแผ่นกันฝนเหนือรอยกรีด กรีดได้แม้ฝนตกบ่อย","อย่ากรีดตอนเปลือกเปียก"]],
+["สิงหาคม",["ยังฝนชุก ทายาหน้ายางต่อ","ตัดแต่งกิ่งยางเล็กที่แตกต่ำ","ดูแลทางระบายน้ำ อย่าให้น้ำขังโคนต้น"]],
+["กันยายน",["<b>ใส่ปุ๋ยครั้งที่ 2</b> ปลายฝน ตอนดินยังชื้น","ทายาหน้ายางต่อถ้ายังฝนตก"]],
+["ตุลาคม",["ใส่ปุ๋ยครั้งที่ 2 ถ้ายังไม่ได้ใส่ (ก่อนดินแห้ง)","ช่วงนี้น้ำยางเริ่มดี กรีดสม่ำเสมอ"]],
+["พฤศจิกายน",["ช่วงที่<b>ได้น้ำยางมากที่สุด</b>ของปี กรีดให้สม่ำเสมอ","ถางหญ้าก่อนเข้าหน้าแล้ง"]],
+["ธันวาคม",["น้ำยางยังดี","เริ่มทำแนวกันไฟ","ยางเล็ก: คลุมโคนก่อนหน้าแล้ง"]]];
+function renderTodo(){const m=new Date().getMonth(),nx=(m+1)%12;
+ $("rt-todo").innerHTML=`<div class="todo"><div class="mo" style="border:2px solid var(--acc)"><h4>เดือนนี้ (${CAL[m][0]})</h4><ul>${CAL[m][1].map(x=>`<li>${x}</li>`).join("")}</ul></div>
+ <div class="mo"><h4>เดือนหน้า (${CAL[nx][0]}) เตรียมไว้</h4><ul>${CAL[nx][1].map(x=>`<li>${x}</li>`).join("")}</ul></div>
+ <details><summary>ดูทั้งปี</summary><div class="todo" style="margin-top:6px">${CAL.map((c,i)=>`<div class="mo"><h4>${c[0]}</h4><ul>${c[1].map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div></details></div>`}
+renderTodo();
+function girth(){const g=+$("gcm").value;if(!$("gcm").value){$("gout").innerHTML='<div class="mute">ใช้สายวัดตัวเลือกต้นที่ขนาดปานกลาง 10 ต้น วัดแล้วใส่ค่าเฉลี่ย</div>';return}
+ const pct=Math.min(100,g/50*100);let msg,k;
+ if(g>=50){k="ok";msg=`✅ <b>กรีดได้แล้ว</b><br>เริ่มเปิดกรีดได้เมื่อต้นในสวน 7 ใน 10 ต้น มีรอบต้นถึง 50 ซม. · เปิดกรีดที่ความสูง 150 ซม. ครึ่งต้น`}
+ else{const y=(50-g)/7,yy=y<0.5?"ไม่ถึงครึ่งปี":y<1?"ประมาณครึ่งปีถึงปี":`ประมาณ ${Math.ceil(y)} ปี`;k=g>=45?"w":"";
+  msg=`${g>=45?"⏳":"🌱"} <b>ยังกรีดไม่ได้</b> ขาดอีก ${f1(50-g)} ซม.<br>ยางโตปีละราว 6–8 ซม. ต้องรออีก<b>${yy}</b> · ใส่ปุ๋ยให้ครบช่วยให้กรีดได้เร็วขึ้น<br><span class="mute">กรีดก่อนถึง 50 ซม. ต้นจะโทรม น้ำยางน้อยไปตลอด</span>`}
+ $("gout").innerHTML=`<div class="prog"><i style="width:${pct}%"></i></div><div class="mute">${f1(g)} จาก 50 ซม.</div><div class="tip ${k}" style="margin-top:8px;font-size:1.1rem">${msg}</div>`;
+ SAYTXT=$("gout").innerText}
+$("gcm").oninput=girth;girth();
+document.querySelectorAll(".rtabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".rtabs button").forEach(x=>x.classList.toggle("on",x===b));
+ $("rt-todo").hidden=b.dataset.t!=="todo";$("rt-girth").hidden=b.dataset.t!=="girth";if(b.dataset.t==="girth")$("gcm").focus()});
+$("say").onclick=()=>{try{const t=$("rt-todo").hidden?($("tap").innerText+". "+$("gout").innerText):($("tap").innerText+". งานเดือนนี้ "+$("rt-todo").querySelector(".mo").innerText);
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[✅❌⏰💧🌦️🌧️🍂🌱⏳]/g,""));u.lang="th-TH";u.rate=.85;
+ const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith("th"));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){$("say").textContent="🔇 เครื่องนี้อ่านไม่ได้"}};
+if(!("speechSynthesis" in window))$("say").hidden=true;
+</script></body></html>
