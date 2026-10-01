@@ -317,8 +317,13 @@ cane:[["15-15-15",50,"ตอนปลูก โรยในร่อง"],["46-0
 corn:[["16-20-0",50,"ตอนปลูก"],["46-0-0",25,"ตอนข้าวโพดอายุ 25–30 วัน"]]};
 // ค่าเริ่มต้นสำหรับคิดกำไร: ราคาขาย บาท/กก., ผลผลิต กก./ไร่/รอบ, ต้นทุนอื่น บาท/ไร่, ชื่อผลผลิต
 const PF={rubber:[60,250,500,"ยางแผ่นดิบ"],rice:[12,450,3500,"ข้าวเปลือก"],cassava:[2.5,4000,4500,"หัวมันสด"],cane:[1.1,13000,6000,"อ้อย"],corn:[8,900,4000,"ข้าวโพดเมล็ด"]};
-const MK={rubber:["การยางแห่งประเทศไทย (กยท.) ราคายางวันนี้","https://www.raot.co.th/"],rice:["ราคาข้าว สมาคมโรงสีข้าวไทย","https://www.thairicemillers.com/"],
+const MK={rubber:["การยางแห่งประเทศไทย (กยท.) ราคายางวันนี้","https://new.raot.co.th/rubber-market"],rice:["ราคาข้าว สมาคมโรงสีข้าวไทย","https://www.thairicemillers.com/"],
 cassava:["ราคามันสำปะหลัง สมาคมการค้ามันสำปะหลังไทย","https://www.thaitapiocastarch.org/"],cane:["ราคาอ้อย สำนักงานคณะกรรมการอ้อยและน้ำตาลทราย","https://www.ocsb.go.th/"],corn:["ราคาสินค้าเกษตร กรมการค้าภายใน","https://www.dit.go.th/"]};
+// ราคากลางจากการยางแห่งประเทศไทย (กยท.) — ดึงสดทุกครั้งที่เปิดเว็บ
+const RAOT_T={sheet:["rss-grade-3","ราคายางแผ่นรมควันชั้น 3 (กยท. ไม่ได้ประกาศราคายางแผ่นดิบ ยางแผ่นดิบมักได้ต่ำกว่านี้เล็กน้อย)"],latex:["latex","ราคาน้ำยางสด (บาทต่อกิโลเนื้อยางแห้ง)"],cup:["fresh","ราคายางก้อนถ้วยสด"]};
+const RAOT={},RPpe={};
+const thDate=d=>{const x=new Date(d+"T00:00");return x.getDate()+" "+["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."][x.getMonth()]+" "+(x.getFullYear()+543)};
+Promise.all(Object.entries(RAOT_T).map(([k,[t]])=>fetch("https://new.raot.co.th/wp-json/rubber/v1/chart?type="+t).then(r=>r.json()).then(j=>{const d=j.data.filter(x=>+x.avg_price>0).pop();if(d){RAOT[k]={p:+d.avg_price,d:d.date};if(!RPpe[k])RP[k][1]=+d.avg_price}}).catch(()=>{}))).then(()=>{try{calc()}catch(e){}});
 let FS=false,SHARE=0,RPROD="sheet",TYR=3,RPedited=false;
 // ผลผลิตเนื้อยางแห้งเฉลี่ย (กก./ไร่/ปี) เมื่อใส่ปุ๋ยครบ ดูแลดี ภาคอีสาน แยกตามปีที่กรีด
 const TAPY=[["ปีแรกที่กรีด",150],["ปีที่ 2",200],["ปีที่ 3",240],["ปีที่ 4–15 (ช่วงให้น้ำยางสูงสุด)",281],["ปีที่ 16–20",250],["ปีที่ 21 ขึ้นไป (ต้นแก่)",200]];
@@ -339,7 +344,7 @@ function rubberYield(n,rai){const dry=Math.round(TAPY[TYR][1]*VAR[VR][1]),tr=rai
  <li>เทียบของจริง: <b>มุกดาหารเฉลี่ยทั้งจังหวัด 219 กก./ไร่/ปี</b> (สำนักงานเกษตรจังหวัดมุกดาหาร ม.ค. 2568) · ภาคอีสานเฉลี่ย 218 กก. (สศก. 2560)</li>
  <li>ตัวเลขแยกตามปีที่กรีด (ปีแรก ปีที่ 2 …) ยังเป็นค่าประมาณ เพราะงานวิจัยไม่ได้แยกให้</li></ul></details>
  ถ้าได้น้อยกว่านี้มาก ให้ตรวจ: ใส่ปุ๋ยครบไหม · หน้ากรีดเป็นโรคไหม · กรีดถี่เกินไหม · มีหญ้าแย่งปุ๋ยไหม</div>`}
-const RP={sheet:["ยางแผ่นดิบ",60,250,"รีดเป็นแผ่นแล้วตากแห้ง ราคาดี แต่ใช้แรงงานและเวลา"],latex:["น้ำยางสด",58,250,"ขายทันทีหลังกรีด ราคาคิดจากเนื้อยางแห้ง (% DRC) ผลผลิตให้ใส่เป็นกิโลเนื้อยางแห้ง"],cup:["ยางก้นถ้วย",25,450,"ปล่อยให้น้ำยางแข็งในถ้วย เก็บง่าย ไม่ต้องรีด มีน้ำปน น้ำหนักมากกว่า แต่ราคาต่อกิโลถูกกว่า"]};const PV={};Object.keys(PF).forEach(k=>PV[k]=[...PF[k]]);
+const RP={sheet:["ยางแผ่นดิบ",85,250,"รีดเป็นแผ่นแล้วตากแห้ง ราคาดี แต่ใช้แรงงานและเวลา"],latex:["น้ำยางสด",80,250,"ขายทันทีหลังกรีด ราคาคิดจากเนื้อยางแห้ง (% DRC) ผลผลิตให้ใส่เป็นกิโลเนื้อยางแห้ง"],cup:["ยางก้นถ้วย",42,450,"ปล่อยให้น้ำยางแข็งในถ้วย เก็บง่าย ไม่ต้องรีด มีน้ำปน น้ำหนักมากกว่า แต่ราคาต่อกิโลถูกกว่า"]};const PV={};Object.keys(PF).forEach(k=>PV[k]=[...PF[k]]);
 const cc=$("cc"),cage=$("cage"),crai=$("crai"),ctree=$("ctree");
 RB.forEach((r,i)=>cage.add(new Option(r[0],i)));cage.value=6;
 let treeTouched=false;ctree.oninput=()=>{treeTouched=true;calc()};
@@ -419,7 +424,7 @@ function calc(){
  <h3 style="margin:16px 0 6px">คิดกำไร-ขาดทุน · จุดคุ้มทุน</h3>
  <div class="mute">ตัวเลขในช่องเป็นตัวอย่าง ให้แก้เป็นราคาที่ขายได้จริงวันนี้ · ดูราคากลางได้ที่ <a href="${MK[k][1]}" target="_blank" rel="noopener">${MK[k][0]}</a></div>
  <div class="fg" style="margin-top:8px">
- ${rb?`<div style="grid-column:1/-1">ขายยางแบบไหน<div class="tools" style="margin-top:4px">${Object.entries(RP).map(([key,v])=>`<button type="button" class="rpb${key===RPROD?" on":""}" data-r="${key}">${v[0]}</button>`).join("")}</div><span class="mute">${RP[RPROD][3]}</span></div>`:""}<div>ขาย${pname} กิโลละ (บาท)${inp("pp",price,0.1)}</div>
+ ${rb?`<div style="grid-column:1/-1">ขายยางแบบไหน<div class="tools" style="margin-top:4px">${Object.entries(RP).map(([key,v])=>`<button type="button" class="rpb${key===RPROD?" on":""}" data-r="${key}">${v[0]}</button>`).join("")}</div><span class="mute">${RP[RPROD][3]}</span></div>`:""}<div>ขาย${pname} กิโลละ (บาท)${inp("pp",price,0.1)}${rb?(RAOT[RPROD]?`<span class="mute">📢 ราคา กยท. ${thDate(RAOT[RPROD].d)}: <b>${RAOT[RPROD].p.toFixed(2)} บาท</b> · ${RAOT_T[RPROD][1]}${RPpe[RPROD]?` · <a href="#" onclick="RPpe[RPROD]=false;RP[RPROD][1]=RAOT[RPROD].p;calc();return false">ใช้ราคา กยท.</a>`:""}</span>`:`<span class="mute">ดึงราคา กยท. ไม่ได้ตอนนี้ ใส่ราคาเองได้</span>`):""}</div>
  <div>ได้ผลผลิตไร่ละ (กิโล${rb?"/ปี":"/รอบ"})${inp("py",yld,10)}</div>
  <div>ค่าใช้จ่ายอื่นไร่ละ (บาท)${inp("po",other,100)}<span class="mute">${rb?"ยาทาหน้ายาง ถ้วย กรด ลวด มีด":"ค่าไถ ค่าพันธุ์ ค่าจ้าง ค่ายา ค่าเกี่ยว"}</span></div>${rb?`<div>แบ่งเงินให้คนกรีด (%)${inp("ps",SHARE,5)}<span class="mute">กรีดเอง = 0 · จ้างแบ่งครึ่ง = 50</span></div><label class="chk"><input type="checkbox" id="pfs" ${FS?"checked":""}> คนกรีดช่วยออกค่าปุ๋ยตามสัดส่วนที่แบ่งยาง<span class="mute">เช่น แบ่งยาง 40% ก็ออกค่าปุ๋ย 40%</span></label>`:""}</div>
  ${rb&&!tapping?`<div class="tip w" style="margin-top:8px">ยางยังไม่ถึงอายุกรีด จึงยังไม่มีรายได้จากน้ำยาง ปีนี้มีแต่รายจ่าย <b>${bt(cost)}</b> · ลองปลูกพืชแซม เช่น มัน สับปะรด ถั่ว ระหว่างแถวยางเพื่อหารายได้ระหว่างรอ</div>`:`
@@ -436,7 +441,7 @@ function calc(){
  {const e=$("ps");if(e)e.onchange=()=>{SHARE=Math.min(100,+e.value||0);calc()}}
  document.querySelectorAll(".tyb[data-y]").forEach(b=>b.onclick=()=>{TYR=+b.dataset.y;calc()});document.querySelectorAll(".vrb").forEach(b=>b.onclick=()=>{VR=b.dataset.v;calc()});
  document.querySelectorAll(".rpb").forEach(b=>b.onclick=()=>{RPROD=b.dataset.r;calc()});
- [["pp",0],["py",1],["po",2]].forEach(([id,j])=>{const e=$(id);if(e)e.onchange=()=>{if(rb&&j<2){RP[RPROD][j+1]=+e.value||0;if(j===1)RPedited=true}else PV[k][j]=+e.value||0;calc()}});
+ [["pp",0],["py",1],["po",2]].forEach(([id,j])=>{const e=$(id);if(e)e.onchange=()=>{if(rb&&j<2){RP[RPROD][j+1]=+e.value||0;if(j===1)RPedited=true;if(j===0)RPpe[RPROD]=true}else PV[k][j]=+e.value||0;calc()}});
 }
 calc();
 
