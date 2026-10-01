@@ -72,14 +72,14 @@ h1{margin:0;font-size:1.6rem}select,button{font:inherit;padding:8px 12px;border-
 <div id="rt-girth" hidden><div class="big2">วัดรอบต้นยาง <span class="mute">(วัดสูงจากดิน 150 ซม. ประมาณระดับอก)</span></div>
 <div class="gi"><input id="gcm" type="number" inputmode="decimal" min="0" max="200" placeholder="เช่น 42" class="ni" aria-label="รอบต้นเป็นเซนติเมตร"><span class="big2">ซม.</span></div>
 <div id="gout"></div></div></div>
-<div class="card" id="calc"><h2 style="margin:0">💰 ใส่ปุ๋ยเท่าไร คุ้มไหม กำไรเท่าไร</h2>
+<details class="card fold" id="calc"><summary><h2>💰 ใส่ปุ๋ยเท่าไร คุ้มไหม กำไรเท่าไร</h2></summary>
 <div class="mute">กรอกพืช อายุ และขนาดสวน แล้วระบบบอกว่าใส่ปุ๋ยอะไร ต้นละ/ไร่ละเท่าไร ทั้งสวนต้องซื้อกี่กระสอบ กี่ตัน</div>
 <div class="facts" style="margin-top:10px">
 <label>พืช<select id="cc" style="width:100%"><option value="rubber">🌳 ยางพารา</option><option value="rice">🌾 ข้าวนาปี</option><option value="cassava">🥔 มันสำปะหลัง</option><option value="cane">🎋 อ้อย</option><option value="corn">🌽 ข้าวโพดเลี้ยงสัตว์</option></select></label>
 <label id="cageL">อายุยาง<select id="cage" style="width:100%"></select></label>
 <label>พื้นที่ (ไร่)<input id="crai" type="number" min="0" step="0.5" value="10" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"></label>
 <label id="ctreeL">จำนวนต้น (ใส่เองได้)<input id="ctree" type="number" min="0" step="1" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid var(--mute);background:var(--card);color:var(--fg)"></label>
-</div><div id="cout" style="margin-top:12px;overflow-x:auto"></div></div>
+</div><div id="cout" style="margin-top:12px;overflow-x:auto"></div></details>
 <div class="card now" id="now"></div>
 <div class="card"><h2 style="margin-top:0">🚜 งานในไร่วันนี้ ทำได้ไหม</h2><div class="tips" id="tips"></div></div>
 <div class="card"><h2 style="margin-top:0">🌦️ พยากรณ์ 7 วัน</h2><div class="days" id="days"></div></div>
